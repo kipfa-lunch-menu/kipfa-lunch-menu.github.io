@@ -152,7 +152,7 @@
     const likes = String(m['좋아요누른사람'] || '').split(',').filter(x=>x);
     const dislikes = String(m['싫어요누른사람'] || '').split(',').filter(x=>x);
     const isDeleteRequested = m['삭제요청상태'] === 'Y';
-    const dateStr = String(m['추천방문일'] || '').split('T')[0] || '미정';
+    const dateStr = String(m['추천방문일']).split('T')[0] || '미정';
 
     let reactionHTML = '', topActionsHTML = '', bottomActionsHTML = '', deletedTagHTML = '';
     if (isDeleteRequested) deletedTagHTML = `<div class="tag-deleted">🚨 삭제 요청 검토 중: ${m['삭제요청사유'] || '사유 미상'}</div>`;
@@ -192,7 +192,8 @@
 
     allMenus.forEach(m => {
       if (!m['추천방문일']) return;
-      const d = new Date(m['추천방문일']); d.setHours(0,0,0,0);
+      const dStr = String(m['추천방문일']).split('T')[0];
+      const d = new Date(dStr + "T00:00:00"); 
       if (d >= thisStart && d < nextStart) tw.appendChild(createCard(m, 'pick'));
       else if (d >= nextStart && d < nextNext) nw.appendChild(createCard(m, 'pick'));
     });
@@ -209,8 +210,7 @@
   }
 
   function checkDuplicate(type) {
-    if (isEditingExisting) return; 
-    
+    if (isEditingExisting) return;
     let inputVal = document.getElementById(type === 'name' ? 'form-shopname' : 'form-url').value.trim();
     if (inputVal.length < 2) return;
     const search = inputVal.replace(/\s/g, '');
@@ -218,16 +218,7 @@
       const target = (type === 'name' ? m['가게명'] : m['가게URL'] || '').replace(/\s/g, '');
       return target.includes(search) || search.includes(target);
     });
-    
-    if (found) { 
-      if (confirm(`이미 등록된 맛집인 것 같아요. [${found['가게명']}]\n정보를 불러올까요?`)) { 
-        fillFormWithData(found); 
-        isEditingExisting = true; 
-      } else {
-        if (type === 'name') document.getElementById('form-shopname').value = '';
-        if (type === 'url') document.getElementById('form-url').value = '';
-      }
-    }
+    if (found && confirm(`이미 등록된 맛집인 것 같아요. [${found['가게명']}]\n정보를 불러올까요?`)) { fillFormWithData(found); isEditingExisting = true; }
   }
 
   function fillFormWithData(m) {
@@ -250,8 +241,8 @@
     const duplicate = allMenus.find(m => {
       const target = (m['가게명'] || '').replace(/\s/g, '');
       const search = shopName.replace(/\s/g, '');
-      const dateMatch = String(m['추천방문일']).startsWith(visitDate);
-      return (target.includes(search) || search.includes(target)) && dateMatch && m['ID'] !== editId;
+      const dStr = String(m['추천방문일']).split('T')[0];
+      return (target.includes(search) || search.includes(target)) && dStr === visitDate && m['ID'] !== editId;
     });
     if (duplicate) return alert(`🚨 이미 ${visitDate}에 등록된 맛집입니다!`);
 
