@@ -9,9 +9,6 @@
   <link rel="apple-touch-icon" href="favicon.png">
   <title>KIPFA 점심 추천</title>
   <style>
-    :root {
-      --sticky-top: 135px;
-    }
     body { font-family: 'Pretendard', -apple-system, sans-serif; background-color: #f7f9fa; margin: 0; padding: 0; color: #2c3e50; }
     .container { max-width: 500px; margin: 0 auto; padding: 0 20px 90px 20px; } 
     .hidden { display: none !important; }
@@ -29,7 +26,7 @@
     .section-title { 
       position: -webkit-sticky; 
       position: sticky; 
-      top: var(--sticky-top); 
+      top: 135px; 
       background: rgba(247, 249, 250, 0.95); 
       backdrop-filter: blur(5px);
       z-index: 90; 
@@ -44,7 +41,7 @@
     .filter-section { 
       position: -webkit-sticky; 
       position: sticky; 
-      top: var(--sticky-top); 
+      top: 125px; 
       background: rgba(247, 249, 250, 0.95); 
       backdrop-filter: blur(5px);
       z-index: 90; 
@@ -77,9 +74,14 @@
     .search-input, .category-select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e1e5e8; box-sizing: border-box; font-size: 14px; background: white; outline: none; }
 
     .menu-card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); margin-bottom: 18px; border: 1px solid #e1e5e8; position: relative; }
-    .card-top-actions { position: absolute; top: 18px; right: 18px; display: flex; gap: 6px; }
+    .card-top-actions { position: absolute; top: 18px; right: 18px; display: flex; gap: 6px; z-index: 10; }
     .btn-mini { background: #f1f3f5; border: none; padding: 5px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; color: #7f8c8d; transition: 0.2s; }
-    .tag-container { margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 5px; }
+    .btn-mini.danger:hover { background: #fee2e2; color: #e74c3c; }
+    
+    /* ⭐️ 버튼과 겹치지 않도록 안전 여백(padding-right: 105px) 추가 */
+    .menu-card h3 { margin: 0 0 6px 0; font-size: 18px; color: #2c3e50; padding-right: 105px; }
+    .tag-container { margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 5px; padding-right: 105px; }
+    
     .tag { display: inline-block; background: #f0f3f5; color: #555; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; }
     .tag-date { background: #fff9db; color: #f08c00; }
     .tag-status { background: #e3f2fd; color: #1976d2; border: 1px solid #bbdefb; } 
@@ -196,21 +198,8 @@
   let currentUserPin = localStorage.getItem('lunchUserPin'), allMenus = [], isEditingExisting = false;
   let activePickNames = []; 
 
-  window.onload = () => { 
-    initPriceDropdowns(); 
-    initDateDropdown(); 
-    if (currentUserPin && userMap[currentUserPin]) showMainScreen(); 
-    showA2HS(); 
-    window.addEventListener('resize', updateStickyGap);
-  };
+  window.onload = () => { initPriceDropdowns(); initDateDropdown(); if (currentUserPin && userMap[currentUserPin]) showMainScreen(); showA2HS(); };
   
-  function updateStickyGap() {
-    const header = document.querySelector('.sticky-top-area');
-    if (header) {
-      document.documentElement.style.setProperty('--sticky-top', Math.floor(header.getBoundingClientRect().height) - 1 + 'px');
-    }
-  }
-
   function showLoader(t) { document.getElementById('loader-text').innerText = t; document.getElementById('global-loader').classList.remove('hidden'); }
   function hideLoader() { document.getElementById('global-loader').classList.add('hidden'); }
   
@@ -237,13 +226,7 @@
 
   function login() { const p = document.getElementById('pin-input').value; if (userMap[p]) { localStorage.setItem('lunchUserPin', p); currentUserPin = p; showMainScreen(); } else alert('등록되지 않은 번호입니다.'); }
   function logout() { localStorage.removeItem('lunchUserPin'); location.reload(); }
-  function showMainScreen() { 
-    document.getElementById('login-screen').classList.add('hidden'); 
-    document.getElementById('main-screen').classList.remove('hidden'); 
-    document.getElementById('user-info').innerText = `👋 ${userMap[currentUserPin]}님`; 
-    fetchMenus(false); 
-    setTimeout(updateStickyGap, 100);
-  }
+  function showMainScreen() { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('main-screen').classList.remove('hidden'); document.getElementById('user-info').innerText = `👋 ${userMap[currentUserPin]}님`; fetchMenus(false); }
   
   async function fetchMenus(silent) {
     if (!silent) showLoader('데이터 로딩 중...');
@@ -257,7 +240,6 @@
     document.getElementById('tab-recommended').classList.toggle('active', n === 'recommended');
     document.getElementById('tab-all').classList.toggle('active', n === 'all');
     window.scrollTo(0, 0); 
-    setTimeout(updateStickyGap, 50);
   }
 
   function createCard(m, tabType) {
