@@ -10,48 +10,88 @@
   <title>KIPFA 점심 추천</title>
   <style>
     body { font-family: 'Pretendard', -apple-system, sans-serif; background-color: #f7f9fa; margin: 0; padding: 0; color: #2c3e50; }
-    .container { max-width: 500px; margin: 0 auto; padding: 20px; padding-bottom: 90px; }
+    .container { max-width: 500px; margin: 0 auto; padding: 0 20px 90px 20px; } 
     .hidden { display: none !important; }
+    
+    .sticky-top-area { 
+      position: -webkit-sticky; 
+      position: sticky; 
+      top: 0; 
+      background: #f7f9fa; 
+      z-index: 100; 
+      padding-top: 20px; 
+      padding-bottom: 5px; 
+    }
+    
+    .section-title { 
+      position: -webkit-sticky; 
+      position: sticky; 
+      top: 135px; 
+      background: rgba(247, 249, 250, 0.95); 
+      backdrop-filter: blur(5px);
+      z-index: 90; 
+      font-size: 16px; 
+      color: #34495e; 
+      border-bottom: 2px solid #3498db; 
+      padding: 15px 0 10px 0; 
+      margin: 0 0 15px 0; 
+      font-weight: bold; 
+    }
+
     #login-screen { text-align: center; margin-top: 100px; }
     .pin-input { font-size: 24px; padding: 12px; width: 160px; text-align: center; border: 2px solid #ddd; border-radius: 12px; margin-bottom: 25px; letter-spacing: 5px; background: white; }
     input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     input[type="number"] { -moz-appearance: textfield; }
+
     .btn { background-color: #3498db; color: white; border: none; padding: 14px 20px; font-size: 16px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; transition: 0.2s; box-shadow: 0 4px 6px rgba(52,152,219,0.2); }
     .btn:active { transform: scale(0.98); }
+    .btn:disabled { background-color: #bdc3c7; cursor: not-allowed; box-shadow: none; }
     .btn-secondary { background-color: #95a5a6; margin-top: 10px; box-shadow: none; }
+
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     .header h2 { margin: 0; font-size: 20px; font-weight: 800; }
     #user-info { font-size: 13px; font-weight: bold; background: #e8f4f8; color: #2980b9; padding: 6px 12px; border-radius: 20px; }
     .logout-btn { background: white; border: 1px solid #ddd; color: #7f8c8d; padding: 5px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; font-weight: bold; }
-    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+
+    .tabs { display: flex; gap: 10px; margin-bottom: 10px; }
     .tab { flex: 1; text-align: center; padding: 14px; background: white; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 14px; border: 1px solid #eee; transition: 0.3s; color: #7f8c8d; }
     .tab.active { background: #3498db; color: white; border-color: #3498db; box-shadow: 0 4px 10px rgba(52,152,219,0.3); }
-    .section-title { font-size: 16px; color: #34495e; border-bottom: 2px solid #3498db; padding-bottom: 6px; margin: 30px 0 15px 0; font-weight: bold; }
+    
     .filter-section { margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
     .search-input, .category-select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e1e5e8; box-sizing: border-box; font-size: 14px; background: white; outline: none; }
+
     .menu-card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); margin-bottom: 18px; border: 1px solid #e1e5e8; position: relative; }
     .card-top-actions { position: absolute; top: 18px; right: 18px; display: flex; gap: 6px; }
     .btn-mini { background: #f1f3f5; border: none; padding: 5px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; color: #7f8c8d; transition: 0.2s; }
-    .tag-container { margin-bottom: 12px; }
-    .tag { display: inline-block; background: #f0f3f5; color: #555; padding: 5px 10px; border-radius: 6px; font-size: 11px; margin-right: 5px; font-weight: 600; }
+    .tag-container { margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 5px; }
+    .tag { display: inline-block; background: #f0f3f5; color: #555; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; }
     .tag-date { background: #fff9db; color: #f08c00; }
-    .tag-deleted { background: #fee2e2; color: #e74c3c; width: 100%; text-align: center; margin-bottom: 12px; font-size: 12px; padding: 8px; border-radius: 8px; font-weight: bold; }
+    .tag-status { background: #e3f2fd; color: #1976d2; border: 1px solid #bbdefb; } 
+    .tag-deleted { background: #fee2e2; color: #e74c3c; width: 100%; text-align: center; margin-bottom: 12px; font-size: 12px; padding: 8px; border-radius: 8px; font-weight: bold; box-sizing: border-box; }
+    
     .menu-details { font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 15px; background: #f8f9fa; padding: 12px; border-radius: 10px; }
     .map-link { color: #e67e22; text-decoration: none; font-weight: bold; font-size: 13px; background: #fdf3e9; padding: 6px 12px; border-radius: 20px; }
+    
     .reaction-group { display: flex; gap: 8px; }
-    .like-btn, .dislike-btn { background: white; border: 1px solid #eee; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 4px; font-size: 13px; }
+    .like-btn, .dislike-btn { background: white; border: 1px solid #eee; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 4px; font-size: 13px; transition: 0.2s; }
     .like-btn.liked { background: #fa5252; color: white; border-color: #fa5252; }
     .dislike-btn.liked { background: #7f8c8d; color: white; border-color: #7f8c8d; }
-    .btn-outline { width: 100%; background: white; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 10px; cursor: pointer; border: 1px solid #3498db; color: #3498db; margin-top: 15px; }
-    .fab { position: fixed; bottom: 25px; right: 25px; background: linear-gradient(135deg, #3498db, #2ecc71); color: white; width: 64px; height: 64px; border-radius: 50%; font-size: 30px; border: none; box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4); display: flex; justify-content: center; align-items: center; z-index: 99; }
-    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(2px); }
+    .like-btn:disabled, .dislike-btn:disabled { opacity: 0.6; cursor: wait; }
+
+    .btn-outline { width: 100%; background: white; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 10px; cursor: pointer; border: 1px solid #3498db; color: #3498db; margin-top: 15px; transition: 0.2s; }
+
+    .fab { position: fixed; bottom: 25px; right: 25px; background: linear-gradient(135deg, #3498db, #2ecc71); color: white; width: 64px; height: 64px; border-radius: 50%; font-size: 30px; border: none; box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4); display: flex; justify-content: center; align-items: center; z-index: 1000; cursor: pointer; }
+
+    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(2px); }
     .modal-content { background: white; padding: 25px; border-radius: 20px; width: 90%; max-width: 400px; max-height: 85vh; overflow-y: auto; }
     .form-group { margin-bottom: 18px; }
     .form-group label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 13px; color: #34495e; }
     .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 14px; }
+
     #global-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 45px; height: 45px; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
     #a2hs-banner { position: fixed; bottom: -150px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: rgba(44, 62, 80, 0.95); color: white; padding: 16px 20px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.25); display: flex; align-items: center; justify-content: space-between; z-index: 10000; transition: bottom 0.5s; backdrop-filter: blur(5px); box-sizing: border-box; }
     #a2hs-banner.show { bottom: 25px; }
   </style>
@@ -69,10 +109,39 @@
   </div>
 
   <div id="main-screen" class="hidden">
-    <div class="header"><h2>KIPFA 점심 추천</h2><div class="user-badge-container"><span id="user-info"></span><button class="logout-btn" onclick="logout()">로그아웃</button></div></div>
-    <div class="tabs"><div id="tab-recommended" class="tab active" onclick="showTab('recommended')">📅 이번주/다음주 Pick</div><div id="tab-all" class="tab" onclick="showTab('all')">📂 전체 맛집 보기</div></div>
-    <div id="view-recommended"><div class="section-title">🎯 이번주 수/금 회식 후보</div><div id="list-this-week"></div><div class="section-title" style="margin-top: 40px;">🗓️ 다음주 수/금 회식 후보</div><div id="list-next-week"></div></div>
-    <div id="view-all" class="hidden"><div class="filter-section"><input type="text" id="search-input" class="search-input" placeholder="🔍 맛집 검색..." onkeyup="renderAllTab()"><select id="category-filter" class="category-select" onchange="renderAllTab()"><option value="all">전체 카테고리</option><option value="한식">한식</option><option value="중식">중식</option><option value="일식">일식</option><option value="양식">양식</option><option value="분식">분식</option><option value="기타">기타</option></select></div><div id="list-all"></div></div>
+    
+    <div class="sticky-top-area">
+      <div class="header">
+        <h2>KIPFA 점심 추천</h2>
+        <div class="user-badge-container"><span id="user-info"></span><button class="logout-btn" onclick="logout()">로그아웃</button></div>
+      </div>
+      <div class="tabs">
+        <div id="tab-recommended" class="tab active" onclick="showTab('recommended')">📅 이번주/다음주 Pick</div>
+        <div id="tab-all" class="tab" onclick="showTab('all')">📂 전체 맛집 보기</div>
+      </div>
+    </div>
+
+    <div id="view-recommended">
+      <h3 class="section-title">🎯 이번주 수/금 회식 후보</h3>
+      <div id="list-this-week"></div>
+      
+      <h3 class="section-title">🗓️ 다음주 수/금 회식 후보</h3>
+      <div id="list-next-week"></div>
+    </div>
+
+    <div id="view-all" class="hidden">
+      <div class="filter-section">
+        <input type="text" id="search-input" class="search-input" placeholder="🔍 맛집 검색..." onkeyup="renderAllTab()">
+        <select id="category-filter" class="category-select" onchange="renderAllTab()">
+          <option value="all">전체 카테고리</option>
+          <option value="한식">한식</option><option value="중식">중식</option>
+          <option value="일식">일식</option><option value="양식">양식</option>
+          <option value="분식">분식</option><option value="기타">기타</option>
+        </select>
+      </div>
+      <div id="list-all"></div>
+    </div>
+
     <button class="fab" onclick="openModal('add')">＋</button>
   </div>
 </div>
@@ -87,7 +156,8 @@
     <div class="form-group"><label>카테고리</label><select id="form-category"><option value="한식">한식</option><option value="중식">중식</option><option value="일식">일식</option><option value="양식">양식</option><option value="분식">분식</option><option value="기타">기타</option></select></div>
     <div class="form-group"><label>대표 메뉴</label><input type="text" id="form-menu-1" placeholder="메뉴 1 (필수)" style="margin-bottom:8px;"><input type="text" id="form-menu-2" placeholder="메뉴 2 (선택)" style="margin-bottom:8px;"><input type="text" id="form-menu-3" placeholder="메뉴 3 (선택)"></div>
     <div class="form-group"><label>가격대</label><div style="display:flex; align-items:center; gap:10px;"><select id="form-price-min"></select><span>~</span><select id="form-price-max"></select></div></div>
-    <button class="btn" onclick="submitMenu()" id="submit-btn">추천 완료</button><button class="btn btn-secondary" onclick="closeModal()">닫기</button>
+    <button class="btn" onclick="submitMenu()" id="submit-btn" style="margin-top:20px;">추천 완료</button>
+    <button class="btn btn-secondary" onclick="closeModal()">닫기</button>
   </div>
 </div>
 
@@ -97,7 +167,8 @@
     <p style="font-size:13px; color:#555; margin-bottom:20px;">삭제 사유를 선택해 주세요.</p>
     <input type="hidden" id="delete-menu-id">
     <div class="form-group"><label>삭제 사유</label><select id="delete-reason"><option value="폐업/이전">폐업 또는 이전</option><option value="가격상승">가격이 너무 오름</option><option value="재방문의사없음">맛/서비스 불만족</option></select></div>
-    <button class="btn" style="background:#e74c3c;" onclick="submitDeleteRequest()">요청하기</button><button class="btn btn-secondary" onclick="document.getElementById('delete-modal').classList.add('hidden')">취소</button>
+    <button class="btn" style="background:#e74c3c;" onclick="submitDeleteRequest()" id="delete-submit-btn">요청하기</button>
+    <button class="btn btn-secondary" onclick="document.getElementById('delete-modal').classList.add('hidden')">취소</button>
   </div>
 </div>
 
@@ -107,15 +178,18 @@
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRoJPOYW8FB1Ck69hOl56aluBxNDjUAPewlsTEgIvK39y6hShhx4SU6K2enx0R29NLAQ/exec'; 
   const userMap = { '4488':'유인호','7991':'송선애','4611':'신동철','1121':'이소영','5555':'문진곤','4946':'유광열','5015':'박영민','2253':'조은지','8830':'이수연' };
   let currentUserPin = localStorage.getItem('lunchUserPin'), allMenus = [], isEditingExisting = false;
+  let activePickNames = []; 
 
   window.onload = () => { initPriceDropdowns(); initDateDropdown(); if (currentUserPin && userMap[currentUserPin]) showMainScreen(); showA2HS(); };
   function showLoader(t) { document.getElementById('loader-text').innerText = t; document.getElementById('global-loader').classList.remove('hidden'); }
   function hideLoader() { document.getElementById('global-loader').classList.add('hidden'); }
+  
   function initPriceDropdowns() {
     const min = document.getElementById('form-price-min'), max = document.getElementById('form-price-max');
     for (let i=500; i<=50000; i+=500) { let p = i.toLocaleString(); min.add(new Option(p, p)); max.add(new Option(p, p)); }
     min.value = "9,000"; max.value = "15,000";
   }
+  
   function initDateDropdown() {
     const s = document.getElementById('form-date'); s.innerHTML = '';
     let today = new Date(); today.setHours(0,0,0,0);
@@ -130,6 +204,7 @@
       }
     });
   }
+
   function login() { const p = document.getElementById('pin-input').value; if (userMap[p]) { localStorage.setItem('lunchUserPin', p); currentUserPin = p; showMainScreen(); } else alert('등록되지 않은 번호입니다.'); }
   function logout() { localStorage.removeItem('lunchUserPin'); location.reload(); }
   function showMainScreen() { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('main-screen').classList.remove('hidden'); document.getElementById('user-info').innerText = `👋 ${userMap[currentUserPin]}님`; fetchMenus(false); }
@@ -145,6 +220,7 @@
     document.getElementById('view-all').classList.toggle('hidden', n !== 'all');
     document.getElementById('tab-recommended').classList.toggle('active', n === 'recommended');
     document.getElementById('tab-all').classList.toggle('active', n === 'all');
+    window.scrollTo(0, 0); 
   }
 
   function createCard(m, tabType) {
@@ -153,8 +229,10 @@
     const dislikes = String(m['싫어요누른사람'] || '').split(',').filter(x=>x);
     const isDeleteRequested = m['삭제요청상태'] === 'Y';
     const dateStr = String(m['추천방문일']).split('T')[0] || '미정';
+    const cleanName = (m['가게명'] || '').replace(/\s/g, '');
 
-    let reactionHTML = '', topActionsHTML = '', bottomActionsHTML = '', deletedTagHTML = '';
+    let reactionHTML = '', topActionsHTML = '', bottomActionsHTML = '', deletedTagHTML = '', activePickTag = '';
+    
     if (isDeleteRequested) deletedTagHTML = `<div class="tag-deleted">🚨 삭제 요청 검토 중: ${m['삭제요청사유'] || '사유 미상'}</div>`;
 
     if (tabType === 'pick') {
@@ -163,16 +241,19 @@
         <button class="dislike-btn ${dislikes.includes(currentUserPin)?'liked':''}" onclick="toggleReaction('${m['ID']}', 'toggle_dislike', this)">${dislikes.includes(currentUserPin)?'💔':'👎'} ${dislikes.length}</button>
       </div>`;
     } else {
+      if (activePickNames.includes(cleanName)) {
+        activePickTag = `<span class="tag tag-status">🎯 이번주/다음주 Pick 선정됨</span>`;
+      }
       reactionHTML = `<span style="font-size:12px; color:#e74c3c; font-weight:bold; background:#fff0f0; padding:6px 12px; border-radius:12px;">❤️ 누적 좋아요 ${likes.length}개</span>`;
       topActionsHTML = `<div class="card-top-actions">
         <button class="btn-mini" onclick="openModal('edit', '${m['ID']}')">✏️ 수정</button>
         <button class="btn-mini danger" onclick="openDeleteModal('${m['ID']}')" ${isDeleteRequested?'disabled':''}>${isDeleteRequested?'요청중':'🗑️ 삭제'}</button>
       </div>`;
-      bottomActionsHTML = `<button class="btn-outline" onclick="openModal('re-pick', '${m['ID']}')">🔄 다시 Pick</button>`;
+      bottomActionsHTML = `<button class="btn-outline" onclick="openModal('re-pick', '${m['ID']}')">🔄 다시 Pick 하기</button>`;
     }
 
     div.innerHTML = `${topActionsHTML}${deletedTagHTML}
-      <div class="tag-container"><span class="tag">${m['카테고리']}</span><span class="tag tag-date">📅 ${dateStr}</span></div>
+      <div class="tag-container"><span class="tag">${m['카테고리']}</span><span class="tag tag-date">📅 ${dateStr}</span>${activePickTag}</div>
       <div style="font-weight:bold; color:#7f8c8d; margin-bottom:5px;">🏠 ${m['가게명']}</div>
       <h3>${m['대표메뉴']}</h3>
       <div class="menu-details">📍 ${m['가격대']}</div>
@@ -190,10 +271,17 @@
     const nextStart = new Date(thisStart); nextStart.setDate(thisStart.getDate() + 7);
     const nextNext = new Date(nextStart); nextNext.setDate(nextStart.getDate() + 7);
 
+    activePickNames = []; 
+
     allMenus.forEach(m => {
       if (!m['추천방문일']) return;
       const dStr = String(m['추천방문일']).split('T')[0];
       const d = new Date(dStr + "T00:00:00"); 
+      
+      if (d >= thisStart && d < nextNext) {
+        activePickNames.push((m['가게명'] || '').replace(/\s/g, '')); 
+      }
+      
       if (d >= thisStart && d < nextStart) tw.appendChild(createCard(m, 'pick'));
       else if (d >= nextStart && d < nextNext) nw.appendChild(createCard(m, 'pick'));
     });
@@ -202,7 +290,16 @@
   function renderAllTab() {
     const l = document.getElementById('list-all'); l.innerHTML = '';
     const s = document.getElementById('search-input').value.toLowerCase(), f = document.getElementById('category-filter').value;
-    allMenus.slice().reverse().forEach(m => {
+    
+    const uniqueMap = new Map();
+    allMenus.forEach(m => {
+      const cleanName = (m['가게명'] || '').replace(/\s/g, '');
+      uniqueMap.set(cleanName, m);
+    });
+    
+    const displayList = Array.from(uniqueMap.values()).reverse();
+
+    displayList.forEach(m => {
       if ((f === 'all' || m['카테고리'] === f) && ((m['가게명']||'').toLowerCase().includes(s) || (m['대표메뉴']||'').toLowerCase().includes(s))) {
         l.appendChild(createCard(m, 'all'));
       }
@@ -210,7 +307,7 @@
   }
 
   function checkDuplicate(type) {
-    if (isEditingExisting) return;
+    if (isEditingExisting) return; 
     let inputVal = document.getElementById(type === 'name' ? 'form-shopname' : 'form-url').value.trim();
     if (inputVal.length < 2) return;
     
@@ -251,7 +348,9 @@
     });
     if (duplicate) return alert(`🚨 이미 ${visitDate}에 등록된 맛집입니다!`);
 
-    showLoader('처리 중...');
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true; btn.innerText = "⏳ 처리 중...";
+    
     const urlMatch = document.getElementById('form-url').value.match(/(https?:\/\/[^\s]+)/);
     const postData = {
       action: isEdit ? 'edit_menu' : 'add_menu', id: editId, author: currentUserPin, visitDate: visitDate, category: document.getElementById('form-category').value,
@@ -259,7 +358,7 @@
       price: `${document.getElementById('form-price-min').value}원 ~ ${document.getElementById('form-price-max').value}원`
     };
     try { const r = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify(postData) }); if ((await r.json()).success) { alert(isEdit?'수정 완료!':'추천 완료!'); closeModal(); fetchMenus(true); } }
-    catch (e) { alert('통신 오류'); } finally { hideLoader(); }
+    catch (e) { alert('통신 오류'); } finally { btn.disabled = false; btn.innerText = isEdit ? "수정 완료" : "추천 완료"; }
   }
 
   function openModal(mode, id) {
@@ -267,17 +366,27 @@
     document.getElementById('form-edit-id').value = (mode === 'edit') ? id : '';
     document.getElementById('submit-btn').innerText = (mode === 'edit') ? "수정 완료" : "추천 완료";
     if (mode === 'add') { document.getElementById('modal-title').innerText = "신규 메뉴 추천"; resetForm(); isEditingExisting = false; }
-    else { const ex = allMenus.find(x => x['ID'] === id); if (ex) { document.getElementById('modal-title').innerText = (mode==='edit')?"정보 수정":"다시 추천하기"; fillFormWithData(ex); isEditingExisting = (mode==='edit'); } }
+    else { const ex = allMenus.find(x => x['ID'] === id); if (ex) { document.getElementById('modal-title').innerText = (mode==='edit')?"정보 수정":"다시 Pick 하기"; fillFormWithData(ex); isEditingExisting = true; } }
   }
   function resetForm() { ['form-shopname','form-url','form-menu-1','form-menu-2','form-menu-3'].forEach(id => document.getElementById(id).value = ''); document.getElementById('form-category').value = '한식'; }
   function closeModal() { document.getElementById('add-modal').classList.add('hidden'); }
-  async function toggleReaction(id, action, btn) { btn.disabled = true; try { const r = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify({ action:action, id:id, userPin:currentUserPin }) }); if ((await r.json()).success) fetchMenus(true); } catch(e) { alert('오류'); btn.disabled = false; } }
+  
+  async function toggleReaction(id, action, btn) { 
+    const originalText = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = '⏳...';
+    try { const r = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify({ action:action, id:id, userPin:currentUserPin }) }); if ((await r.json()).success) fetchMenus(true); } catch(e) { alert('오류'); btn.disabled = false; btn.innerHTML = originalText; } 
+  }
+  
   function openDeleteModal(id) { document.getElementById('delete-menu-id').value = id; document.getElementById('delete-modal').classList.remove('hidden'); }
+  
   async function submitDeleteRequest() {
     const id = document.getElementById('delete-menu-id').value, reason = document.getElementById('delete-reason').value;
-    document.getElementById('delete-modal').classList.add('hidden'); showLoader('처리 중...');
-    try { const r = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify({ action:'request_delete', id:id, reason:reason }) }); if ((await r.json()).success) { alert('삭제 요청 접수!'); fetchMenus(true); } } catch(e) { alert('오류'); } finally { hideLoader(); }
+    const btn = document.getElementById('delete-submit-btn');
+    btn.disabled = true; btn.innerText = "⏳ 처리 중...";
+    document.getElementById('delete-modal').classList.add('hidden'); showLoader('삭제 요청 처리 중...');
+    try { const r = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify({ action:'request_delete', id:id, reason:reason }) }); if ((await r.json()).success) { alert('삭제 요청 접수!'); fetchMenus(true); } } catch(e) { alert('오류'); } finally { hideLoader(); btn.disabled = false; btn.innerText = "요청하기"; }
   }
+  
   function showA2HS() {
     if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true || localStorage.getItem('hideA2HS') === 'true') return;
     if (/iphone|ipad|ipod|android/.test(window.navigator.userAgent.toLowerCase())) setTimeout(() => document.getElementById('a2hs-banner').classList.add('show'), 2000);
