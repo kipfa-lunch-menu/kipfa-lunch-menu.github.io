@@ -29,18 +29,26 @@
     .tab { flex: 1; text-align: center; padding: 14px; background: white; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 14px; border: 1px solid #eee; transition: 0.3s; color: #7f8c8d; }
     .tab.active { background: #3498db; color: white; border-color: #3498db; box-shadow: 0 4px 10px rgba(52,152,219,0.3); }
     .section-title { font-size: 16px; color: #34495e; border-bottom: 2px solid #3498db; padding-bottom: 6px; margin: 30px 0 15px 0; font-weight: bold; }
+    .filter-section { margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
+    .search-input, .category-select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e1e5e8; box-sizing: border-box; font-size: 14px; background: white; outline: none; }
     .menu-card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); margin-bottom: 18px; border: 1px solid #e1e5e8; position: relative; }
     .card-top-actions { position: absolute; top: 18px; right: 18px; display: flex; gap: 6px; }
     .btn-mini { background: #f1f3f5; border: none; padding: 5px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; color: #7f8c8d; transition: 0.2s; }
+    .btn-mini.danger:hover { background: #fee2e2; color: #e74c3c; }
     .menu-card h3 { margin: 0 0 6px 0; font-size: 18px; color: #2c3e50; padding-right: 80px; }
     .tag-container { margin-bottom: 12px; }
     .tag { display: inline-block; background: #f0f3f5; color: #555; padding: 5px 10px; border-radius: 6px; font-size: 11px; margin-right: 5px; font-weight: 600; }
     .tag-date { background: #fff9db; color: #f08c00; }
+    .tag-deleted { background: #fee2e2; color: #e74c3c; width: 100%; text-align: center; margin-bottom: 12px; font-size: 12px; padding: 8px; border-radius: 8px; font-weight: bold; }
     .menu-details { font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 15px; background: #f8f9fa; padding: 12px; border-radius: 10px; }
     .map-link { color: #e67e22; text-decoration: none; font-weight: bold; font-size: 13px; background: #fdf3e9; padding: 6px 12px; border-radius: 20px; }
     .reaction-group { display: flex; gap: 8px; }
     .like-btn, .dislike-btn { background: white; border: 1px solid #eee; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 4px; font-size: 13px; }
-    .fab { position: fixed; bottom: 25px; right: 25px; background: linear-gradient(135deg, #3498db, #2ecc71); color: white; width: 64px; height: 64px; border-radius: 50%; font-size: 30px; border: none; box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4); cursor: pointer; display: flex; justify-content: center; align-items: center; z-index: 99; }
+    .like-btn.liked { background: #fa5252; color: white; border-color: #fa5252; }
+    .dislike-btn.liked { background: #7f8c8d; color: white; border-color: #7f8c8d; }
+    .re-pick-container { margin-top: 15px; border-top: 1px dashed #eee; padding-top: 15px; }
+    .btn-outline { width: 100%; background: white; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 10px; cursor: pointer; border: 1px solid #3498db; color: #3498db; }
+    .fab { position: fixed; bottom: 25px; right: 25px; background: linear-gradient(135deg, #3498db, #2ecc71); color: white; width: 64px; height: 64px; border-radius: 50%; font-size: 30px; border: none; box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4); display: flex; justify-content: center; align-items: center; z-index: 99; }
     .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(2px); }
     .modal-content { background: white; padding: 25px; border-radius: 20px; width: 90%; max-width: 400px; max-height: 85vh; overflow-y: auto; }
     .form-group { margin-bottom: 18px; }
@@ -88,8 +96,14 @@
     </div>
 
     <div id="view-all" class="hidden">
-      <div style="margin-bottom:20px;">
-        <input type="text" id="search-input" class="form-group" style="width:100%; padding:14px; border-radius:12px; border:1px solid #ddd;" placeholder="🔍 맛집 검색..." onkeyup="renderAllTab()">
+      <div class="filter-section">
+        <input type="text" id="search-input" class="search-input" placeholder="🔍 맛집 검색..." onkeyup="renderAllTab()">
+        <select id="category-filter" class="category-select" onchange="renderAllTab()">
+          <option value="all">전체 카테고리</option>
+          <option value="한식">한식</option><option value="중식">중식</option>
+          <option value="일식">일식</option><option value="양식">양식</option>
+          <option value="분식">분식</option><option value="기타">기타</option>
+        </select>
       </div>
       <div id="list-all"></div>
     </div>
@@ -102,73 +116,30 @@
   <div class="modal-content">
     <h3 style="margin-top:0; margin-bottom:20px;" id="modal-title">메뉴 추천</h3>
     <input type="hidden" id="form-edit-id">
-    
-    <div class="form-group" id="date-group">
-      <label>추천 방문일 (수/금)</label>
-      <select id="form-date"></select>
-    </div>
-
-    <div class="form-group">
-      <label>가게명</label>
-      <input type="text" id="form-shopname" placeholder="가게명 입력" onblur="checkDuplicate('name')">
-    </div>
-
-    <div class="form-group">
-      <label>지도 URL</label>
-      <input type="text" id="form-url" placeholder="주소를 붙여넣으세요">
-    </div>
-
-    <div class="form-group">
-      <label>카테고리</label>
-      <select id="form-category">
-        <option value="한식">한식</option><option value="중식">중식</option>
-        <option value="일식">일식</option><option value="양식">양식</option>
-        <option value="분식">분식</option><option value="기타">기타</option>
-      </select>
-    </div>
-    
-    <div class="form-group">
-      <label>대표 메뉴</label>
-      <input type="text" id="form-menu-1" placeholder="메뉴 1 (필수)" style="margin-bottom:8px;">
-      <input type="text" id="form-menu-2" placeholder="메뉴 2 (선택)" style="margin-bottom:8px;">
-      <input type="text" id="form-menu-3" placeholder="메뉴 3 (선택)">
-    </div>
-    
-    <div class="form-group">
-      <label>가격대</label>
-      <div style="display:flex; align-items:center; gap:10px;">
-        <select id="form-price-min"></select><span>~</span><select id="form-price-max"></select>
-      </div>
-    </div>
-
+    <div class="form-group" id="date-group"><label>추천 방문일 (수/금)</label><select id="form-date"></select></div>
+    <div class="form-group"><label>가게명</label><input type="text" id="form-shopname" placeholder="가게명 입력" onblur="checkDuplicate('name')"></div>
+    <div class="form-group"><label>지도 URL</label><input type="text" id="form-url" placeholder="주소를 붙여넣으세요"></div>
+    <div class="form-group"><label>카테고리</label><select id="form-category"><option value="한식">한식</option><option value="중식">중식</option><option value="일식">일식</option><option value="양식">양식</option><option value="분식">분식</option><option value="기타">기타</option></select></div>
+    <div class="form-group"><label>대표 메뉴</label><input type="text" id="form-menu-1" placeholder="메뉴 1 (필수)" style="margin-bottom:8px;"><input type="text" id="form-menu-2" placeholder="메뉴 2 (선택)" style="margin-bottom:8px;"><input type="text" id="form-menu-3" placeholder="메뉴 3 (선택)"></div>
+    <div class="form-group"><label>가격대</label><div style="display:flex; align-items:center; gap:10px;"><select id="form-price-min"></select><span>~</span><select id="form-price-max"></select></div></div>
     <button class="btn" onclick="submitMenu()" id="submit-btn">추천 완료</button>
     <button class="btn btn-secondary" onclick="closeModal()">닫기</button>
   </div>
 </div>
 
 <script>
-  // 구글 앱스 스크립트 주소
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRoJPOYW8FB1Ck69hOl56aluBxNDjUAPewlsTEgIvK39y6hShhx4SU6K2enx0R29NLAQ/exec'; 
-  
   const userMap = { '4488':'유인호','7991':'송선애','4611':'신동철','1121':'이소영','5555':'문진곤','4946':'유광열','5015':'박영민','2253':'조은지','8830':'이수연' };
-  let currentUserPin = localStorage.getItem('lunchUserPin');
-  let allMenus = [];
-  let isEditingExisting = false;
+  let currentUserPin = localStorage.getItem('lunchUserPin'), allMenus = [], isEditingExisting = false;
 
-  window.onload = () => {
-    initPriceDropdowns(); initDateDropdown();
-    if (currentUserPin && userMap[currentUserPin]) showMainScreen();
-  };
-
+  window.onload = () => { initPriceDropdowns(); initDateDropdown(); if (currentUserPin && userMap[currentUserPin]) showMainScreen(); };
   function showLoader(t) { document.getElementById('loader-text').innerText = t; document.getElementById('global-loader').classList.remove('hidden'); }
   function hideLoader() { document.getElementById('global-loader').classList.add('hidden'); }
-
   function initPriceDropdowns() {
     const min = document.getElementById('form-price-min'), max = document.getElementById('form-price-max');
     for (let i=500; i<=50000; i+=500) { let p = i.toLocaleString(); min.add(new Option(p, p)); max.add(new Option(p, p)); }
     min.value = "9,000"; max.value = "15,000";
   }
-
   function initDateDropdown() {
     const s = document.getElementById('form-date'); s.innerHTML = '';
     let today = new Date(); today.setHours(0,0,0,0);
@@ -183,60 +154,96 @@
       }
     });
   }
-
-  function login() {
-    const p = document.getElementById('pin-input').value;
-    if (userMap[p]) { localStorage.setItem('lunchUserPin', p); currentUserPin = p; showMainScreen(); }
-    else { alert('등록되지 않은 번호입니다.'); }
-  }
-
+  function login() { const p = document.getElementById('pin-input').value; if (userMap[p]) { localStorage.setItem('lunchUserPin', p); currentUserPin = p; showMainScreen(); } else alert('등록되지 않은 번호입니다.'); }
   function logout() { localStorage.removeItem('lunchUserPin'); location.reload(); }
-
-  function showMainScreen() {
-    document.getElementById('login-screen').classList.add('hidden');
-    document.getElementById('main-screen').classList.remove('hidden');
-    document.getElementById('user-info').innerText = `👋 ${userMap[currentUserPin]}님`;
-    fetchMenus(false);
-  }
-
+  function showMainScreen() { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('main-screen').classList.remove('hidden'); document.getElementById('user-info').innerText = `👋 ${userMap[currentUserPin]}님`; fetchMenus(false); }
   async function fetchMenus(silent) {
-    if (!silent) showLoader('맛집 리스트를 불러오는 중...');
-    try { 
-      const r = await fetch(SCRIPT_URL); 
-      allMenus = await r.json(); 
-      renderPicksTab(); 
-      renderAllTab(); 
-    }
-    catch (e) { alert('데이터 로드 실패 원인: ' + e.message); } 
-    finally { hideLoader(); }
+    if (!silent) showLoader('데이터 로딩 중...');
+    try { const r = await fetch(SCRIPT_URL); allMenus = await r.json(); renderPicksTab(); renderAllTab(); }
+    catch (e) { alert('데이터 로드 실패 원인: ' + e.message); } finally { hideLoader(); }
   }
-
   function showTab(n) {
     document.getElementById('view-recommended').classList.toggle('hidden', n !== 'recommended');
     document.getElementById('view-all').classList.toggle('hidden', n !== 'all');
     document.getElementById('tab-recommended').classList.toggle('active', n === 'recommended');
     document.getElementById('tab-all').classList.toggle('active', n === 'all');
   }
+  function createCard(m, tabType) {
+    const div = document.createElement('div'); div.className = 'menu-card';
+    const likes = String(m['좋아요누른사람'] || '').split(',').filter(x=>x);
+    const isLiked = likes.includes(currentUserPin);
+    const dislikes = String(m['싫어요누른사람'] || '').split(',').filter(x=>x);
+    const isDisliked = dislikes.includes(currentUserPin);
+    const isDeleteRequested = m['삭제요청상태'] === 'Y';
+    const dateStr = m['추천방문일'] ? m['추천방문일'].split('T')[0] : '미정';
 
+    let reactionHTML = '', topActionsHTML = '', bottomActionsHTML = '';
+    
+    if (tabType === 'pick') {
+      reactionHTML = `
+        <div class="reaction-group">
+          <button class="like-btn ${isLiked?'liked':''}" onclick="toggleReaction('${m['ID']}', 'toggle_like', this)">${isLiked?'❤️':'🤍'} ${likes.length}</button>
+          <button class="dislike-btn ${isDisliked?'liked':''}" onclick="toggleReaction('${m['ID']}', 'toggle_dislike', this)">${isDisliked?'💔':'👎'} ${dislikes.length}</button>
+        </div>`;
+    } else {
+      reactionHTML = `<span style="font-size:12px; color:#e74c3c; font-weight:bold; background:#fff0f0; padding:6px 12px; border-radius:12px;">❤️ 누적 좋아요 ${likes.length}개</span>`;
+      topActionsHTML = `
+        <div class="card-top-actions">
+          <button class="btn-mini" onclick="openModal('edit', '${m['ID']}')">✏️ 수정</button>
+          <button class="btn-mini danger" onclick="alert('삭제 요청 기능은 현재 준비중입니다.')" ${isDeleteRequested?'disabled':''}>${isDeleteRequested?'요청중':'🗑️ 삭제'}</button>
+        </div>`;
+      bottomActionsHTML = `<div class="re-pick-container"><button class="btn-outline" onclick="openModal('re-pick', '${m['ID']}')">🔄 다시 Pick</button></div>`;
+    }
+
+    div.innerHTML = `
+      ${topActionsHTML}
+      <div class="tag-container"><span class="tag">${m['카테고리']}</span><span class="tag tag-date">📅 ${dateStr}</span></div>
+      <div style="font-weight:bold; color:#7f8c8d; margin-bottom:5px;">🏠 ${m['가게명']}</div>
+      <h3>${m['대표메뉴']}</h3>
+      <div class="menu-details">📍 ${m['가격대']}</div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <a href="${m['가게URL']}" target="_blank" class="map-link">🗺️ 지도보기</a>
+        ${reactionHTML}
+      </div>
+      ${bottomActionsHTML}`;
+    return div;
+  }
+  function renderPicksTab() {
+    const tw = document.getElementById('list-this-week'), nw = document.getElementById('list-next-week'); tw.innerHTML = nw.innerHTML = '';
+    let today = new Date(); today.setHours(0,0,0,0);
+    let day = today.getDay(), diff = today.getDate() - day + (day === 0 ? -6 : 1);
+    let thisStart = new Date(today); thisStart.setDate(diff);
+    let nextStart = new Date(thisStart); nextStart.setDate(thisStart.getDate() + 7);
+    let nextNext = new Date(nextStart); nextNext.setDate(nextStart.getDate() + 7);
+    allMenus.forEach(m => {
+      if (!m['추천방문일']) return;
+      let d = new Date(m['추천방문일']); d.setHours(0,0,0,0);
+      if (d >= thisStart && d < nextStart) tw.appendChild(createCard(m, 'pick'));
+      else if (d >= nextStart && d < nextNext) nw.appendChild(createCard(m, 'pick'));
+    });
+  }
+  function renderAllTab() {
+    const l = document.getElementById('list-all'); l.innerHTML = '';
+    const s = document.getElementById('search-input').value.toLowerCase();
+    const f = document.getElementById('category-filter').value;
+    allMenus.slice().reverse().forEach(m => {
+      const matchCat = (f === 'all' || m['카테고리'] === f);
+      const matchSearch = (m['가게명']||'').toLowerCase().includes(s) || (m['대표메뉴']||'').toLowerCase().includes(s);
+      if (matchCat && matchSearch) l.appendChild(createCard(m, 'all'));
+    });
+  }
+  async function toggleReaction(id, action, btn) {
+    btn.disabled = true;
+    try { const r = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify({ action:action, id:id, userPin:currentUserPin }) }); if ((await r.json()).success) fetchMenus(true); }
+    catch(e) { alert('오류'); btn.disabled = false; }
+  }
   function checkDuplicate(type) {
     let nameInput = document.getElementById('form-shopname').value.trim();
     if (nameInput.length < 2) return;
     const search = nameInput.replace(/\s/g, '');
-    
-    const existing = allMenus.find(m => {
-      const target = (m['가게명'] || '').replace(/\s/g, '');
-      return target.includes(search) || search.includes(target);
-    });
-
-    if (existing) {
-      if (confirm(`앗! 이미 등록된 맛집인 것 같아요.\n[등록된 이름: ${existing['가게명']}]\n\n이 맛집 정보를 불러올까요?`)) {
-        fillFormWithData(existing);
-        document.getElementById('form-edit-id').value = ""; 
-        document.getElementById('submit-btn').innerText = "추천 완료";
-      }
-    }
+    const existing = allMenus.find(m => { const target = (m['가게명'] || '').replace(/\s/g, ''); return target.includes(search) || search.includes(target); });
+    if (existing) { if (confirm(`이미 등록된 맛집인 것 같아요.\n[등록된 이름: ${existing['가게명']}]\n\n정보를 불러올까요?`)) { fillFormWithData(existing); } }
   }
-
   function fillFormWithData(m) {
     document.getElementById('form-shopname').value = m['가게명'] || '';
     document.getElementById('form-url').value = m['가게URL'] || '';
@@ -248,120 +255,36 @@
     const ps = (m['가격대'] || '').match(/[\d,]+/g);
     if (ps && ps.length >= 2) { document.getElementById('form-price-min').value = ps[0]; document.getElementById('form-price-max').value = ps[1]; }
   }
-
   async function submitMenu() {
-    const shopName = document.getElementById('form-shopname').value.trim();
-    const visitDate = document.getElementById('form-date').value;
-    const editId = document.getElementById('form-edit-id').value;
-    const isEdit = !!editId;
-
+    const shopName = document.getElementById('form-shopname').value.trim(), visitDate = document.getElementById('form-date').value;
+    const editId = document.getElementById('form-edit-id').value, isEdit = !!editId;
     if (!shopName || !document.getElementById('form-menu-1').value) { alert('필수 항목을 입력하세요.'); return; }
-
     const search = shopName.replace(/\s/g, '');
     const duplicatePick = allMenus.find(m => {
       const target = (m['가게명'] || '').replace(/\s/g, '');
       const dateMatch = m['추천방문일'] && m['추천방문일'].startsWith(visitDate);
       return (target.includes(search) || search.includes(target)) && dateMatch && m['ID'] !== editId;
     });
-
-    if (duplicatePick) {
-      alert(`🚨 이미 ${visitDate}에 [${duplicatePick['가게명']}]이(가) 등록되어 있습니다!\n중복 등록은 할 수 없으니 날짜를 바꾸거나 기존 내용을 수정해주세요.`);
-      return;
-    }
-
+    if (duplicatePick) { alert(`이미 ${visitDate}에 등록된 맛집입니다! 중복 등록은 할 수 없습니다.`); return; }
     showLoader('처리 중...');
-    
     const urlMatch = document.getElementById('form-url').value.match(/(https?:\/\/[^\s]+)/);
-    
     const postData = {
-      action: isEdit ? 'edit_menu' : 'add_menu',
-      id: editId, author: currentUserPin, visitDate: visitDate,
-      category: document.getElementById('form-category').value,
-      shopName: shopName, shopUrl: urlMatch ? urlMatch[1] : '',
-      menus: [document.getElementById('form-menu-1').value, document.getElementById('form-menu-2').value, document.getElementById('form-menu-3').value].filter(v=>v).join(', '),
+      action: isEdit ? 'edit_menu' : 'add_menu', id: editId, author: currentUserPin, visitDate: visitDate, category: document.getElementById('form-category').value,
+      shopName: shopName, shopUrl: urlMatch ? urlMatch[1] : '', menus: [document.getElementById('form-menu-1').value, document.getElementById('form-menu-2').value, document.getElementById('form-menu-3').value].filter(v=>v).join(', '),
       price: `${document.getElementById('form-price-min').value}원 ~ ${document.getElementById('form-price-max').value}원`
     };
-
-    try {
-      const r = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify(postData) });
-      const res = await r.json();
-      if (res.success) { alert(isEdit ? '수정 완료!' : '추천 완료!'); closeModal(); fetchMenus(true); }
-    } catch (e) { alert('통신 오류'); } finally { hideLoader(); }
+    try { const r = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify(postData) }); if ((await r.json()).success) { alert(isEdit?'수정 완료!':'추천 완료!'); closeModal(); fetchMenus(true); } }
+    catch (e) { alert('통신 오류'); } finally { hideLoader(); }
   }
-
-  function openModal(m, id) {
+  function openModal(mode, id) {
     document.getElementById('add-modal').classList.remove('hidden');
-    document.getElementById('form-edit-id').value = id || '';
-    document.getElementById('submit-btn').innerText = id ? "수정 완료" : "추천 완료";
-    if (m === 'add') { document.getElementById('modal-title').innerText = "신규 메뉴 추천"; resetForm(); }
-    else { 
-      const existing = allMenus.find(x => x['ID'] === id);
-      if (existing) { document.getElementById('modal-title').innerText = "맛집 정보 수정"; fillFormWithData(existing); }
-    }
+    document.getElementById('form-edit-id').value = (mode === 'edit') ? id : '';
+    document.getElementById('submit-btn').innerText = (mode === 'edit') ? "수정 완료" : "추천 완료";
+    if (mode === 'add') { document.getElementById('modal-title').innerText = "신규 메뉴 추천"; resetForm(); }
+    else { const ex = allMenus.find(x => x['ID'] === id); if (ex) { document.getElementById('modal-title').innerText = (mode==='edit')?"맛집 정보 수정":"다시 추천하기"; fillFormWithData(ex); } }
   }
-
-  function resetForm() {
-    ['form-shopname','form-url','form-menu-1','form-menu-2','form-menu-3'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('form-category').value = '한식';
-  }
-
+  function resetForm() { ['form-shopname','form-url','form-menu-1','form-menu-2','form-menu-3'].forEach(id => document.getElementById(id).value = ''); document.getElementById('form-category').value = '한식'; }
   function closeModal() { document.getElementById('add-modal').classList.add('hidden'); }
-
-  function renderPicksTab() {
-    const tw = document.getElementById('list-this-week'), nw = document.getElementById('list-next-week');
-    tw.innerHTML = nw.innerHTML = '';
-    let today = new Date(); today.setHours(0,0,0,0);
-    let day = today.getDay(), diff = today.getDate() - day + (day === 0 ? -6 : 1);
-    let thisStart = new Date(today); thisStart.setDate(diff);
-    let nextStart = new Date(thisStart); nextStart.setDate(thisStart.getDate() + 7);
-    let nextNext = new Date(nextStart); nextNext.setDate(nextStart.getDate() + 7);
-
-    allMenus.forEach(m => {
-      if (!m['추천방문일']) return;
-      let d = new Date(m['추천방문일']); d.setHours(0,0,0,0);
-      let card = createCard(m, true);
-      if (d >= thisStart && d < nextStart) tw.appendChild(card);
-      else if (d >= nextStart && d < nextNext) nw.appendChild(card);
-    });
-  }
-
-  function renderAllTab() {
-    const l = document.getElementById('list-all'); l.innerHTML = '';
-    const s = document.getElementById('search-input').value.toLowerCase();
-    allMenus.slice().reverse().forEach(m => {
-      if ((m['가게명']||'').toLowerCase().includes(s) || (m['대표메뉴']||'').toLowerCase().includes(s)) {
-        l.appendChild(createCard(m, false));
-      }
-    });
-  }
-
-  function createCard(m, isPick) {
-    const div = document.createElement('div'); div.className = 'menu-card';
-    
-    const likes = String(m['좋아요누른사람'] || '').split(',').filter(x=>x);
-    
-    const dateStr = m['추천방문일'] ? m['추천방문일'].split('T')[0] : '미정';
-    div.innerHTML = `
-      ${!isPick ? `<div class="card-top-actions"><button class="btn-mini" onclick="openModal('edit', '${m['ID']}')">✏️ 수정</button></div>` : ''}
-      <div class="tag-container"><span class="tag">${m['카테고리']}</span><span class="tag tag-date">📅 ${dateStr}</span></div>
-      <div style="font-weight:bold; color:#7f8c8d; margin-bottom:5px;">🏠 ${m['가게명']}</div>
-      <h3>${m['대표메뉴']}</h3>
-      <div class="menu-details">📍 ${m['가격대']}</div>
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <a href="${m['가게URL']}" target="_blank" class="map-link">🗺️ 지도보기</a>
-        <button class="like-btn" onclick="toggleLike('${m['ID']}', this)">❤️ ${likes.length}</button>
-      </div>
-    `;
-    return div;
-  }
-
-  async function toggleLike(id, btn) {
-    btn.disabled = true;
-    try {
-      const r = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify({ action:'toggle_like', id:id, userPin:currentUserPin }) });
-      if ((await r.json()).success) fetchMenus(true);
-    } catch(e) { alert('오류'); btn.disabled = false; }
-  }
 </script>
 </body>
 </html>
