@@ -526,34 +526,29 @@
     if (type === 'name') {
       val = document.getElementById('form-shopname').value.trim();
       if (val.length < 2) return;
-      
-      // 띄어쓰기를 무시하기 위해 공백을 모두 제거한 검색어 생성
       const searchName = val.replace(/\s/g, '');
-      
-      // 양방향 포함 검사 로직
       existing = allMenus.find(m => {
         if (!m['가게명']) return false;
         const targetName = m['가게명'].replace(/\s/g, '');
-        
-        // 입력값(홍수계찜닭)이 기존이름(홍수계찜닭잠실점)에 포함되거나,
-        // 기존이름(홍수계)이 입력값(홍수계찜닭)에 포함되면 중복으로 간주!
         return targetName.includes(searchName) || searchName.includes(targetName);
       });
     } 
     else if (type === 'url') {
       val = document.getElementById('form-url').value.trim();
       const urlMatch = val.match(/(https?:\/\/[^\s]+)/);
-      if (urlMatch) {
-        val = urlMatch[1]; 
-      }
+      if (urlMatch) { val = urlMatch[1]; }
       if (val.length < 10) return;
-      existing = allMenus.find(m => m['가게URL'] === val);
+      existing = allMenus.find(m => m['가게URL'] && m['가게URL'].includes(val));
     }
 
     if (existing) {
-      // 안내 메시지도 상황에 맞게 조금 더 부드럽게 수정했습니다.
-      if (confirm(`기존에 비슷하거나 같은 맛집이 등록되어 있습니다.\n[등록된 이름: ${existing['가게명']}]\n\n이 맛집 정보를 불러와서 다시 추천(Pick) 하시겠습니까?`)) {
-        fillFormWithData(existing); isEditingExisting = true; 
+      if (confirm(`앗! 이미 비슷한 맛집이 등록되어 있습니다.\n[등록된 이름: ${existing['가게명']}]\n\n이 맛집 정보를 불러와서 이어서 작성하시겠습니까?`)) {
+        fillFormWithData(existing); 
+        document.getElementById('form-edit-id').value = existing['ID'];
+        document.getElementById('submit-btn').innerText = "수정 완료";
+        isEditingExisting = true; 
+      } else {
+        document.getElementById('form-shopname').value = '';
       }
     }
   }
@@ -568,15 +563,30 @@
     if (!isEditMode && !dateVal) { alert('선택 가능한 날짜가 없습니다.'); return; }
     if (!shopName || !m1) { alert('가게명과 첫 번째 메뉴는 필수입니다!'); return; }
 
+    if (!isEditMode) {
+      const searchName = shopName.replace(/\s/g, '');
+      const existing = allMenus.find(m => {
+        if (!m['가게명']) return false;
+        const targetName = m['가게명'].replace(/\s/g, '');
+        return targetName.includes(searchName) || searchName.includes(targetName);
+      });
+
+      if (existing) {
+        alert(`🚨 [${existing['가게명']}] 맛집이 이미 존재합니다.\n중복 방지를 위해 기존 정보를 불러왔습니다. 내용을 확인하고 [수정 완료]를 눌러주세요.`);
+        fillFormWithData(existing);
+        document.getElementById('form-edit-id').value = existing['ID'];
+        document.getElementById('submit-btn').innerText = "수정 완료";
+        isEditingExisting = true;
+        return; 
+      }
+    }
+
     let rawUrl = document.getElementById('form-url').value.trim();
     let cleanedUrl = rawUrl;
     if (rawUrl) {
       const urlMatch = rawUrl.match(/(https?:\/\/[^\s]+)/);
-      if (urlMatch) {
-        cleanedUrl = urlMatch[1]; // 진짜 URL만 추출
-      } else {
-        cleanedUrl = ''; // URL 형식이 없으면 깔끔하게 빈칸 처리
-      }
+      if (urlMatch) { cleanedUrl = urlMatch[1]; } 
+      else { cleanedUrl = ''; }
     }
 
     const combinedMenus = [m1, document.getElementById('form-menu-2').value.trim(), document.getElementById('form-menu-3').value.trim()].filter(menu => menu !== '').join(', ');
@@ -590,7 +600,7 @@
       action: isEditMode ? 'edit_menu' : 'add_menu',
       id: editId, author: currentUserPin, category: document.getElementById('form-category').value,
       visitDate: dateVal, shopName: shopName, 
-      shopUrl: cleanedUrl, // 
+      shopUrl: cleanedUrl, 
       menus: combinedMenus, price: combinedPrice    
     };
     
@@ -607,6 +617,8 @@
     } catch (e) { alert('통신 실패! 인터넷 연결 확인 요망.'); }
     finally { btn.disabled = false; hideLoader(); }
   }
+
+  
 
   function openDeleteModal(menuId) {
     document.getElementById('delete-menu-id').value = menuId;
