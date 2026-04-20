@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <meta name="robots" content="noindex, nofollow">
+  
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" href="favicon.png" type="image/png">
+  <link rel="apple-touch-icon" href="favicon.png">
+  
+  <title>KIPFA 점심 추천</title>
+  <style>
+    body { font-family: 'Pretendard', -apple-system, sans-serif; background-color: #f7f9fa; margin: 0; padding: 0; color: #2c3e50; }
+    .container { max-width: 500px; margin: 0 auto; padding: 20px; padding-bottom: 90px; }
+    .hidden { display: none !important; }
+    
+    #login-screen { text-align: center; margin-top: 100px; }
+    .pin-input { font-size: 24px; padding: 12px; width: 160px; text-align: center; border: 2px solid #ddd; border-radius: 12px; margin-bottom: 25px; letter-spacing: 5px; background: white; }
+    
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield; 
+    }
+
+    .btn { background-color: #3498db; color: white; border: none; padding: 14px 20px; font-size: 16px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; transition: 0.2s; box-shadow: 0 4px 6px rgba(52,152,219,0.2); }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { background-color: #bdc3c7; cursor: not-allowed; box-shadow: none; }
+    .btn-secondary { background-color: #95a5a6; margin-top: 10px; box-shadow: none; }
+
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .header h2 { margin: 0; font-size: 20px; font-weight: 800; }
+    
+    .user-badge-container { display: flex; align-items: center; gap: 8px; }
+    #user-info { font-size: 13px; font-weight: bold; background: #e8f4f8; color: #2980b9; padding: 6px 12px; border-radius: 20px; }
+    .logout-btn { background: white; border: 1px solid #ddd; color: #7f8c8d; padding: 5px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; font-weight: bold; }
+
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+    .tab { flex: 1; text-align: center; padding: 14px; background: white; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 14px; border: 1px solid #eee; transition: 0.3s; color: #7f8c8d; }
+    .tab.active { background: #3498db; color: white; border-color: #3498db; box-shadow: 0 4px 10px rgba(52,152,219,0.3); }
+    
+    .section-title { font-size: 16px; color: #34495e; border-bottom: 2px solid #3498db; padding-bottom: 6px; margin: 30px 0 15px 0; font-weight: bold; }
+    .filter-section { margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
+    .search-input, .category-select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e1e5e8; box-sizing: border-box; font-size: 14px; background: white; outline: none; transition: border 0.3s; }
+    .search-input:focus { border-color: #3498db; }
+
+    .menu-card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); margin-bottom: 18px; border: 1px solid #e1e5e8; position: relative; }
+    
+    .card-top-actions { position: absolute; top: 18px; right: 18px; display: flex; gap: 6px; }
+    .btn-mini { background: #f1f3f5; border: none; padding: 5px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; color: #7f8c8d; transition: 0.2s; }
+    .btn-mini:hover { background: #e2e6ea; color: #2c3e50; }
+    .btn-mini.danger:hover { background: #fee2e2; color: #e74c3c; }
+    .btn-mini:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    .menu-card h3 { margin: 0 0 6px 0; font-size: 18px; color: #2c3e50; padding-right: 80px; }
+    .menu-shopname { font-size: 14px; color: #7f8c8d; margin-bottom: 12px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+    
+    .tag-container { margin-bottom: 12px; }
+    .tag { display: inline-block; background: #f0f3f5; color: #555; padding: 5px 10px; border-radius: 6px; font-size: 11px; margin-right: 5px; font-weight: 600; }
+    .tag-date { background: #fff9db; color: #f08c00; }
+    .tag-deleted { background: #fee2e2; color: #e74c3c; width: 100%; box-sizing: border-box; text-align: center; margin-bottom: 12px; font-size: 12px; padding: 8px; border-radius: 8px; font-weight: bold; }
+    
+    .menu-details { font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 15px; background: #f8f9fa; padding: 12px; border-radius: 10px; }
+    .card-actions { display: flex; justify-content: space-between; align-items: center; }
+    .map-link { color: #e67e22; text-decoration: none; font-weight: bold; font-size: 13px; display: flex; align-items: center; background: #fdf3e9; padding: 6px 12px; border-radius: 20px; }
+    
+    .reaction-group { display: flex; gap: 8px; }
+    .like-btn, .dislike-btn { background: white; border: 1px solid #eee; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 4px; font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+    .like-btn { color: #fa5252; border-color: #ffc9c9; }
+    .like-btn.liked { background: #fa5252; color: white; border-color: #fa5252; }
+    .dislike-btn { color: #7f8c8d; border-color: #ddd; }
+    .dislike-btn.liked { background: #7f8c8d; color: white; border-color: #7f8c8d; }
+    .like-btn:disabled, .dislike-btn:disabled { opacity: 0.6; cursor: wait; }
+
+    .re-pick-container { margin-top: 15px; border-top: 1px dashed #eee; padding-top: 15px; }
+    .btn-outline { width: 100%; display: block; background: white; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 10px; cursor: pointer; text-align: center; transition: 0.2s; border: 1px solid #3498db; color: #3498db; }
+    .btn-outline:active { background: #f0f8ff; transform: scale(0.98); }
+
+    .fab { position: fixed; bottom: 25px; right: 25px; background: linear-gradient(135deg, #3498db, #2ecc71); color: white; width: 64px; height: 64px; border-radius: 50%; font-size: 30px; border: none; box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4); cursor: pointer; display: flex; justify-content: center; align-items: center; z-index: 99; transition: 0.2s; }
+    .fab:active { transform: scale(0.9); }
+
+    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(2px); }
+    .modal-content { background: white; padding: 25px; border-radius: 20px; width: 90%; max-width: 400px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 13px; color: #34495e; }
+    .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 14px; background: #fdfdfd; }
+    .form-group input:focus { border-color: #3498db; outline: none; }
+    .price-group { display: flex; align-items: center; gap: 10px; }
+    .price-group select { flex: 1; text-align: center; }
+
+    #global-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 45px; height: 45px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    #a2hs-banner { 
+      position: fixed; bottom: -150px; left: 50%; transform: translateX(-50%); 
+      width: 90%; max-width: 400px; background: rgba(44, 62, 80, 0.95); color: white; 
+      padding: 16px 20px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.25); 
+      display: flex; align-items: center; justify-content: space-between; 
+      z-index: 10000; transition: bottom 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); 
+      backdrop-filter: blur(5px); box-sizing: border-box; 
+    }
+    #a2hs-banner.show { bottom: 25px; }
+    .a2hs-text { font-size: 14px; line-height: 1.5; font-weight: 500; }
+    .a2hs-text b { color: #f1c40f; }
+    .a2hs-close { background: none; border: none; color: white; font-size: 24px; padding: 0 0 0 15px; cursor: pointer; opacity: 0.7; line-height: 1; }
+  </style>
+</head>
+<body>
+
+<div id="global-loader" class="hidden">
+  <div class="spinner"></div>
+  <div id="loader-text" style="font-weight: bold; color: #2c3e50;">처리 중입니다...</div>
+</div>
+
+<div class="container">
+  <div id="login-screen">
+    <h1 style="margin-bottom: 10px; font-size: 26px;">🏢 KIPFA 점심 추천</h1>
+    <p style="color:#7f8c8d; margin-bottom:30px;">휴대폰 뒷자리 4자리를 입력하세요</p>
+    <input type="number" id="pin-input" class="pin-input" placeholder="0000" oninput="if(this.value.length > 4) this.value = this.value.slice(0,4);" onkeypress="if(event.key === 'Enter') login();">
+    <button class="btn" onclick="login()">입장하기</button>
+  </div>
+
+  <div id="main-screen" class="hidden">
+    <div class="header">
+      <h2>KIPFA 점심 추천</h2>
+      <div class="user-badge-container">
+        <span id="user-info"></span>
+        <button class="logout-btn" onclick="logout()">로그아웃</button>
+      </div>
+    </div>
+    
+    <div class="tabs">
+      <div id="tab-recommended" class="tab active" onclick="showTab('recommended')">📅 이번주/다음주 Pick</div>
+      <div id="tab-all" class="tab" onclick="showTab('all')">📂 전체 맛집 보기</div>
+    </div>
+
+    <div id="view-recommended">
+      <div class="section-title">🎯 이번주 수/금 회식 후보</div>
+      <div id="list-this-week"><p style="color:#999; text-align:center; margin: 30px 0;">추천 메뉴가 없습니다.</p></div>
+      
+      <div class="section-title" style="margin-top: 40px;">🗓️ 다음주 수/금 회식 후보</div>
+      <div id="list-next-week"><p style="color:#999; text-align:center; margin: 30px 0;">추천 메뉴가 없습니다.</p></div>
+    </div>
+
+    <div id="view-all" class="hidden">
+      <div class="filter-section">
+        <input type="text" id="search-input" class="search-input" placeholder="🔍 가게명, 메뉴, 카테고리 검색..." onkeyup="renderAllTab()">
+        <select id="category-filter" class="category-select" onchange="renderAllTab()">
+          <option value="all">전체 카테고리</option>
+          <option value="한식">한식</option>
+          <option value="중식">중식</option>
+          <option value="일식">일식</option>
+          <option value="양식">양식</option>
+          <option value="분식">분식</option>
+          <option value="기타">기타</option>
+        </select>
+      </div>
+      <div id="list-all"><p style="text-align:center; color:#999;">로딩 중...</p></div>
+    </div>
+
+    <button class="fab" onclick="openModal('add')">＋</button>
+  </div>
+</div>
+
+<div id="add-modal" class="modal hidden">
+  <div class="modal-content">
+    <h3 style="margin-top:0; margin-bottom:20px;" id="modal-title">신규 메뉴 추천</h3>
+    <input type="hidden" id="form-edit-id">
+    
+    <div class="form-group" id="date-form-group">
+      <label>추천 방문일 (수/금 만 가능)</label>
+      <select id="form-date"></select>
+    </div>
+
+    <div class="form-group">
+      <label>가게명 <span style="font-size:11px; color:#95a5a6; font-weight:normal;">(입력 시 기존 맛집 확인)</span></label>
+      <input type="text" id="form-shopname" placeholder="예: 김밥천국 가산점" onblur="checkDuplicate('name')">
+    </div>
+
+    <div class="form-group">
+      <label>지도 URL <span style="font-size:11px; color:#95a5a6; font-weight:normal;">(복사해서 붙여넣기)</span></label>
+      <input type="url" id="form-url" placeholder="https://..." onblur="checkDuplicate('url')">
+    </div>
+
+    <div class="form-group">
+      <label>카테고리</label>
+      <select id="form-category">
+        <option value="한식">한식</option>
+        <option value="중식">중식</option>
+        <option value="일식">일식</option>
+        <option value="양식">양식</option>
+        <option value="분식">분식</option>
+        <option value="기타">기타</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label>대표 메뉴 (최대 3개)</label>
+      <input type="text" id="form-menu-1" placeholder="메뉴 1 (필수)" style="margin-bottom: 8px;">
+      <input type="text" id="form-menu-2" placeholder="메뉴 2 (선택)" style="margin-bottom: 8px;">
+      <input type="text" id="form-menu-3" placeholder="메뉴 3 (선택)">
+    </div>
+    
+    <div class="form-group">
+      <label>가격대</label>
+      <div class="price-group">
+        <select id="form-price-min"></select>
+        <span>~</span>
+        <select id="form-price-max"></select>
+      </div>
+    </div>
+
+    <button class="btn" onclick="submitMenu()" id="submit-btn">추천 완료</button>
+    <button class="btn btn-secondary" onclick="document.getElementById('add-modal').classList.add('hidden')">닫기</button>
+  </div>
+</div>
+
+<div id="delete-modal" class="modal hidden">
+  <div class="modal-content">
+    <h3 style="margin-top:0; margin-bottom:15px; color:#e74c3c;">🚨 맛집 삭제 요청</h3>
+    <p style="font-size:13px; color:#555; margin-bottom:20px;">삭제를 요청하시는 사유를 선택해 주세요.</p>
+    <input type="hidden" id="delete-menu-id">
+    <div class="form-group">
+      <label>삭제 사유</label>
+      <select id="delete-reason">
+        <option value="폐업/이전">폐업 또는 이전</option>
+        <option value="가격상승">가격이 너무 오름</option>
+        <option value="재방문의사없음">맛/서비스 불만족 (재방문의사 없음)</option>
+      </select>
+    </div>
+    <button class="btn" style="background:#e74c3c;" onclick="submitDeleteRequest()" id="delete-submit-btn">요청하기</button>
+    <button class="btn btn-secondary" onclick="document.getElementById('delete-modal').classList.add('hidden')">취소</button>
+  </div>
+</div>
+
+<div id="a2hs-banner">
+  <div class="a2hs-text" id="a2hs-msg">
+    💡 <b>앱처럼 편리하게 사용하세요!</b><br>
+    브라우저 메뉴에서 <b>[홈 화면에 추가]</b>를 선택해 보세요.
+  </div>
+  <button class="a2hs-close" onclick="closeA2HS()">×</button>
+</div>
+
+<script>
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRoJPOYW8FB1Ck69hOl56aluBxNDjUAPewlsTEgIvK39y6hShhx4SU6K2enx0R29NLAQ/exec'; 
+
+  const userMap = {
+    '4488': '유인호', '7991': '송선애', '4611': '신동철', 
+    '1121': '이소영', '5555': '문진곤', '4946': '유광열', 
+    '5015': '박영민', '2253': '조은지', '8830': '이수연'
+  };
+
+  let currentUserPin = localStorage.getItem('lunchUserPin');
+  let allMenus = [];
+  let currentTab = 'recommended';
+  let thisWeekStart, nextWeekStart, nextNextWeekStart;
+  let isEditingExisting = false; 
+
+  function showLoader(text) {
+    document.getElementById('loader-text').innerText = text;
+    document.getElementById('global-loader').classList.remove('hidden');
+  }
+  function hideLoader() { document.getElementById('global-loader').classList.add('hidden'); }
+
+  window.onload = () => {
+    initPriceDropdowns(); 
+    initDateDropdown();
+    if (currentUserPin && userMap[currentUserPin]) showMainScreen();
+    showA2HS(); 
+  };
+
+  function logout() {
+    localStorage.removeItem('lunchUserPin');
+    location.reload(); 
+  }
+
+  function initPriceDropdowns() {
+    const minSelect = document.getElementById('form-price-min');
+    const maxSelect = document.getElementById('form-price-max');
+    for (let i = 500; i <= 50000; i += 500) {
+      let formattedPrice = i.toLocaleString(); 
+      minSelect.add(new Option(formattedPrice, formattedPrice));
+      maxSelect.add(new Option(formattedPrice, formattedPrice));
+    }
+    minSelect.value = "9,000"; maxSelect.value = "15,000";
+  }
+
+  function initDateDropdown() {
+    const dateSelect = document.getElementById('form-date');
+    dateSelect.innerHTML = '';
+    let today = new Date();
+    today.setHours(0,0,0,0); 
+    let day = today.getDay(); 
+    let diffToMonday = today.getDate() - day + (day === 0 ? -6 : 1);
+    thisWeekStart = new Date(today);
+    thisWeekStart.setDate(diffToMonday);
+    nextWeekStart = new Date(thisWeekStart);
+    nextWeekStart.setDate(nextWeekStart.getDate() + 7);
+    nextNextWeekStart = new Date(nextWeekStart);
+    nextNextWeekStart.setDate(nextNextWeekStart.getDate() + 7);
+    const offsets = [
+      { days: 2, label: '이번주 수요일' }, { days: 4, label: '이번주 금요일' },
+      { days: 9, label: '다음주 수요일' }, { days: 11, label: '다음주 금요일' }
+    ];
+    offsets.forEach(off => {
+      let d = new Date(thisWeekStart);
+      d.setDate(thisWeekStart.getDate() + off.days);
+      if (d >= today) {
+        let year = d.getFullYear();
+        let month = String(d.getMonth() + 1).padStart(2, '0');
+        let date = String(d.getDate()).padStart(2, '0');
+        dateSelect.add(new Option(`[${off.label}] ${year}-${month}-${date}`, `${year}-${month}-${date}`));
+      }
+    });
+  }
+
+  function login() {
+    const pin = document.getElementById('pin-input').value;
+    if (userMap[pin]) {
+      localStorage.setItem('lunchUserPin', pin);
+      currentUserPin = pin;
+      showMainScreen();
+    } else { alert('등록되지 않은 번호입니다.'); }
+  }
+
+  function showMainScreen() {
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('main-screen').classList.remove('hidden');
+    document.getElementById('user-info').innerText = `👋 ${userMap[currentUserPin]}님`;
+    fetchMenus(false);
+  }
+
+  async function fetchMenus(silent = true) {
+    if (!silent) showLoader('맛집 리스트를 불러오는 중... 🍳');
+    try {
+      const response = await fetch(SCRIPT_URL);
+      allMenus = await response.json();
+      renderPicksTab();
+      renderAllTab();
+    } catch (error) {
+      alert('데이터 통신 실패!');
+    } finally {
+      if (!silent) hideLoader();
+    }
+  }
+
+  function showTab(tabName) {
+    currentTab = tabName;
+    document.getElementById('tab-recommended').classList.toggle('active', tabName === 'recommended');
+    document.getElementById('tab-all').classList.toggle('active', tabName === 'all');
+    document.getElementById('view-recommended').classList.toggle('hidden', tabName !== 'recommended');
+    document.getElementById('view-all').classList.toggle('hidden', tabName !== 'all');
+  }
+
+  function createCardHTML(menu, tabType) {
+    const likesStr = menu['좋아요누른사람'] ? String(menu['좋아요누른사람']) : "";
+    const likesArray = likesStr ? likesStr.split(',').filter(x => x) : [];
+    const isLiked = likesArray.includes(currentUserPin);
+    const dislikesStr = menu['싫어요누른사람'] ? String(menu['싫어요누른사람']) : "";
+    const dislikesArray = dislikesStr ? dislikesStr.split(',').filter(x => x) : [];
+    const isDisliked = dislikesArray.includes(currentUserPin);
+    const isDeleteRequested = menu['삭제요청상태'] === 'Y';
+    const shopName = menu['가게명'] || '가게명 미상';
+    
+    let visitDate = '미정';
+    if (menu['추천방문일']) {
+      let d = new Date(menu['추천방문일']);
+      let yyyy = d.getFullYear();
+      let mm = String(d.getMonth() + 1).padStart(2, '0');
+      let dd = String(d.getDate()).padStart(2, '0');
+      const week = ['일', '월', '화', '수', '목', '금', '토'];
+      let dayName = week[d.getDay()];
+      visitDate = `${yyyy}-${mm}-${dd} (${dayName})`;
+    }
+
+    let reactionHTML = '';
+    let topActionsHTML = '';
+    let bottomActionsHTML = '';
+    
+    if (tabType === 'pick') {
+      reactionHTML = `
+        <div class="reaction-group">
+          <button class="like-btn ${isLiked ? 'liked' : ''}" onclick="toggleReaction('${menu['ID']}', 'toggle_like', this)">
+            ${isLiked ? '❤️' : '🤍'} ${likesArray.length}
+          </button>
+          <button class="dislike-btn ${isDisliked ? 'liked' : ''}" onclick="toggleReaction('${menu['ID']}', 'toggle_dislike', this)">
+            ${isDisliked ? '💔' : '👎'} ${dislikesArray.length}
+          </button>
+        </div>
+      `;
+    } else {
+      reactionHTML = `
+        <span style="font-size:12px; color:#e74c3c; font-weight:bold; background:#fff0f0; padding:6px 12px; border-radius:12px;">
+          ❤️ 누적 좋아요 ${likesArray.length}개
+        </span>
+      `;
+      topActionsHTML = `
+        <div class="card-top-actions">
+          <button class="btn-mini" onclick="openModal('edit', '${menu['ID']}')">✏️ 수정</button>
+          <button class="btn-mini danger" onclick="openDeleteModal('${menu['ID']}')" ${isDeleteRequested ? 'disabled' : ''}>
+            ${isDeleteRequested ? '요청중' : '🗑️ 삭제'}
+          </button>
+        </div>
+      `;
+      bottomActionsHTML = `
+        <div class="re-pick-container">
+          <button class="btn-outline" onclick="openModal('re-recommend', '${menu['ID']}')">🔄 다시 Pick</button>
+        </div>
+      `;
+    }
+
+    let cardHTML = `<div class="menu-card">`;
+    cardHTML += topActionsHTML;
+    if (isDeleteRequested) {
+      cardHTML += `<div class="tag-deleted">🚨 삭제 요청 검토 중: ${menu['삭제요청사유']}</div>`;
+    }
+    cardHTML += `
+        <div class="tag-container">
+          <span class="tag">${menu['카테고리']}</span>
+          <span class="tag tag-date">📅 ${visitDate}</span>
+        </div>
+        <div class="menu-shopname">🏠 ${shopName}</div>
+        <h3>${menu['대표메뉴']}</h3>
+        <div class="menu-details">📍 가격대: ${menu['가격대']}</div>
+        <div class="card-actions">
+          <a href="${menu['가게URL']}" target="_blank" class="map-link">🗺️ 지도 보기</a>
+          ${reactionHTML}
+        </div>
+        ${bottomActionsHTML}
+    </div>`;
+    return cardHTML;
+  }
+
+  function renderPicksTab() {
+    const thisWeekDiv = document.getElementById('list-this-week');
+    const nextWeekDiv = document.getElementById('list-next-week');
+    thisWeekDiv.innerHTML = ''; nextWeekDiv.innerHTML = '';
+    let thisWeekCount = 0; let nextWeekCount = 0;
+    let sortedMenus = [...allMenus].sort((a, b) => a['추천방문일'].localeCompare(b['추천방문일']));
+    sortedMenus.forEach(menu => {
+      if (!menu['추천방문일']) return;
+      let d = new Date(menu['추천방문일']);
+      d.setHours(0,0,0,0);
+      if (d >= thisWeekStart && d < nextWeekStart) {
+        thisWeekDiv.innerHTML += createCardHTML(menu, 'pick');
+        thisWeekCount++;
+      }
+      else if (d >= nextWeekStart && d < nextNextWeekStart) {
+        nextWeekDiv.innerHTML += createCardHTML(menu, 'pick');
+        nextWeekCount++;
+      }
+    });
+    if(thisWeekCount === 0) thisWeekDiv.innerHTML = '<p style="color:#999; text-align:center; margin: 30px 0;">이번 주 추천이 없습니다.</p>';
+    if(nextWeekCount === 0) nextWeekDiv.innerHTML = '<p style="color:#999; text-align:center; margin: 30px 0;">다음 주 추천이 없습니다.</p>';
+  }
+
+  function renderAllTab() {
+    const listDiv = document.getElementById('list-all');
+    listDiv.innerHTML = '';
+    const filterCat = document.getElementById('category-filter').value;
+    const searchTerm = document.getElementById('search-input').value.toLowerCase();
+    let displayList = allMenus.filter(m => {
+      const matchCategory = (filterCat === 'all' || m['카테고리'] === filterCat);
+      const shopName = m['가게명'] || '';
+      const searchTarget = (shopName + m['대표메뉴'] + m['카테고리']).toLowerCase();
+      return matchCategory && searchTarget.includes(searchTerm);
+    }).reverse();
+    if (displayList.length === 0) {
+      listDiv.innerHTML = '<p style="text-align:center; color:#999; margin-top:50px;">검색 결과가 없습니다.</p>';
+      return;
+    }
+    displayList.forEach(menu => { listDiv.innerHTML += createCardHTML(menu, 'all'); });
+  }
+
+  function openModal(mode, menuId = null) {
+    isEditingExisting = false;
+    document.getElementById('add-modal').classList.remove('hidden');
+    document.getElementById('form-edit-id').value = '';
+    document.getElementById('form-url').value = '';
+    document.getElementById('form-shopname').value = '';
+    document.getElementById('form-menu-1').value = '';
+    document.getElementById('form-menu-2').value = '';
+    document.getElementById('form-menu-3').value = '';
+    const dateGroup = document.getElementById('date-form-group');
+    const title = document.getElementById('modal-title');
+    const btn = document.getElementById('submit-btn');
+    if (mode === 'add') {
+      title.innerText = "신규 메뉴 추천"; btn.innerText = "추천 완료"; dateGroup.classList.remove('hidden'); 
+    } else if (mode === 'edit') {
+      title.innerText = "맛집 정보 수정"; btn.innerText = "수정 완료"; dateGroup.classList.add('hidden'); 
+      document.getElementById('form-edit-id').value = menuId;
+      const existing = allMenus.find(m => m['ID'] === menuId);
+      if (existing) { fillFormWithData(existing); isEditingExisting = true; }
+    } else if (mode === 're-recommend') {
+      title.innerText = "맛집 다시 Pick 하기"; btn.innerText = "새로 추천하기"; dateGroup.classList.remove('hidden');
+      const existing = allMenus.find(m => m['ID'] === menuId);
+      if (existing) { fillFormWithData(existing); isEditingExisting = true; }
+    }
+  }
+
+  function fillFormWithData(existing) {
+    document.getElementById('form-url').value = existing['가게URL'] || '';
+    document.getElementById('form-shopname').value = existing['가게명'] || '';
+    document.getElementById('form-category').value = existing['카테고리'];
+    const menus = existing['대표메뉴'] ? existing['대표메뉴'].split(', ') : [];
+    document.getElementById('form-menu-1').value = menus[0] || '';
+    document.getElementById('form-menu-2').value = menus[1] || '';
+    document.getElementById('form-menu-3').value = menus[2] || '';
+    const prices = existing['가격대'].match(/[\d,]+/g);
+    if (prices && prices.length >= 2) {
+      document.getElementById('form-price-min').value = prices[0];
+      document.getElementById('form-price-max').value = prices[1];
+    }
+  }
+
+  function checkDuplicate(type) {
+    if (isEditingExisting) return; 
+    let val, existing;
+    if (type === 'name') {
+      val = document.getElementById('form-shopname').value.trim();
+      if (val.length < 2) return;
+      existing = allMenus.find(m => m['가게명'] && m['가게명'].replace(/\s/g, '') === val.replace(/\s/g, ''));
+    } else if (type === 'url') {
+      val = document.getElementById('form-url').value.trim();
+      if (val.length < 10) return;
+      existing = allMenus.find(m => m['가게URL'] === val);
+    }
+    if (existing) {
+      if (confirm(`기존에 등록된 내용이 있습니다. [${existing['가게명']}]\n가게 정보를 불러와 다시 추천하시겠습니까?`)) {
+        fillFormWithData(existing); isEditingExisting = true; 
+      }
+    }
+  }
+
+  async function submitMenu() {
+    const editId = document.getElementById('form-edit-id').value;
+    const isEditMode = !!editId;
+    const dateVal = document.getElementById('form-date').value;
+    const shopName = document.getElementById('form-shopname').value.trim();
+    const m1 = document.getElementById('form-menu-1').value.trim();
+    if (!isEditMode && !dateVal) { alert('선택 가능한 날짜가 없습니다.'); return; }
+    if (!shopName || !m1) { alert('가게명과 첫 번째 메뉴는 필수입니다!'); return; }
+    const combinedMenus = [m1, document.getElementById('form-menu-2').value.trim(), document.getElementById('form-menu-3').value.trim()].filter(menu => menu !== '').join(', ');
+    const combinedPrice = `${document.getElementById('form-price-min').value}원 ~ ${document.getElementById('form-price-max').value}원`;
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    showLoader(isEditMode ? '정보를 수정하는 중입니다... 🚀' : '추천 메뉴를 등록하는 중입니다... 🚀');
+    const postData = {
+      action: isEditMode ? 'edit_menu' : 'add_menu',
+      id: editId, author: currentUserPin, category: document.getElementById('form-category').value,
+      visitDate: dateVal, shopName: shopName, shopUrl: document.getElementById('form-url').value,
+      menus: combinedMenus, price: combinedPrice    
+    };
+    try {
+      const response = await fetch(SCRIPT_URL, { 
+        method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(postData) 
+      });
+      const result = await response.json();
+      if(result.success) {
+        document.getElementById('add-modal').classList.add('hidden');
+        alert(isEditMode ? '수정되었습니다!' : '추천되었습니다!');
+        fetchMenus(true); 
+      } else { alert('처리 거절됨.'); }
+    } catch (e) { alert('통신 실패! 인터넷 연결 확인 요망.'); }
+    finally { btn.disabled = false; hideLoader(); }
+  }
+
+  function openDeleteModal(menuId) {
+    document.getElementById('delete-menu-id').value = menuId;
+    document.getElementById('delete-modal').classList.remove('hidden');
+  }
+
+  async function submitDeleteRequest() {
+    const menuId = document.getElementById('delete-menu-id').value;
+    const reason = document.getElementById('delete-reason').value;
+    document.getElementById('delete-modal').classList.add('hidden');
+    showLoader('삭제 요청을 처리 중입니다...');
+    try {
+      const res = await fetch(SCRIPT_URL, {
+        method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'request_delete', id: menuId, reason: reason })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('삭제 요청이 완료되었습니다. 검토 후 반영됩니다.');
+        fetchMenus(true);
+      }
+    } catch (e) { alert('요청 실패'); }
+    finally { hideLoader(); }
+  }
+
+  async function toggleReaction(id, actionType, btnElement) {
+    const originalText = btnElement.innerHTML; 
+    btnElement.innerHTML = '⏳...';
+    btnElement.disabled = true;
+    try {
+      const res = await fetch(SCRIPT_URL, {
+        method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: actionType, id: id, userPin: currentUserPin })
+      });
+      const data = await res.json();
+      if (data.success) { fetchMenus(true); } 
+      else { alert(data.message); btnElement.innerHTML = originalText; btnElement.disabled = false; }
+    } catch (e) { alert('처리 실패!'); btnElement.innerHTML = originalText; btnElement.disabled = false; }
+  }
+
+  function showA2HS() {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    if (isStandalone) return;
+
+    if (localStorage.getItem('hideA2HS') === 'true') return;
+
+    const ua = window.navigator.userAgent.toLowerCase();
+    const isMobile = /iphone|ipad|ipod|android/.test(ua);
+    
+    if (isMobile) {
+      setTimeout(() => {
+        document.getElementById('a2hs-banner').classList.add('show');
+      }, 1500);
+    }
+  }
+
+  function closeA2HS() {
+    document.getElementById('a2hs-banner').classList.remove('show');
+    localStorage.setItem('hideA2HS', 'true'); 
+  }
+</script>
+
+</body>
+</html>
