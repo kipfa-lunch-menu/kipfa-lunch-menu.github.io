@@ -209,7 +209,8 @@
   }
 
   function checkDuplicate(type) {
-    if (isEditingExisting) return;
+    if (isEditingExisting) return; 
+    
     let inputVal = document.getElementById(type === 'name' ? 'form-shopname' : 'form-url').value.trim();
     if (inputVal.length < 2) return;
     const search = inputVal.replace(/\s/g, '');
@@ -217,7 +218,16 @@
       const target = (type === 'name' ? m['가게명'] : m['가게URL'] || '').replace(/\s/g, '');
       return target.includes(search) || search.includes(target);
     });
-    if (found && confirm(`이미 등록된 맛집인 것 같아요. [${found['가게명']}]\n정보를 불러올까요?`)) { fillFormWithData(found); }
+    
+    if (found) { 
+      if (confirm(`이미 등록된 맛집인 것 같아요. [${found['가게명']}]\n정보를 불러올까요?`)) { 
+        fillFormWithData(found); 
+        isEditingExisting = true; 
+      } else {
+        if (type === 'name') document.getElementById('form-shopname').value = '';
+        if (type === 'url') document.getElementById('form-url').value = '';
+      }
+    }
   }
 
   function fillFormWithData(m) {
