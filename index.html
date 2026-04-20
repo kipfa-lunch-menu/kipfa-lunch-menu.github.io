@@ -213,12 +213,17 @@
     if (isEditingExisting) return;
     let inputVal = document.getElementById(type === 'name' ? 'form-shopname' : 'form-url').value.trim();
     if (inputVal.length < 2) return;
-    const search = inputVal.replace(/\s/g, '');
-    const found = allMenus.find(m => {
+    
+    let search = inputVal.replace(/\s/g, '');
+    let found = allMenus.find(m => {
       const target = (type === 'name' ? m['가게명'] : m['가게URL'] || '').replace(/\s/g, '');
       return target.includes(search) || search.includes(target);
     });
-    if (found && confirm(`이미 등록된 맛집인 것 같아요. [${found['가게명']}]\n정보를 불러올까요?`)) { fillFormWithData(found); isEditingExisting = true; }
+
+    if (found && confirm(`이미 등록된 맛집인 것 같아요. [${found['가게명']}]\n정보를 불러올까요?`)) { 
+      fillFormWithData(found); 
+      isEditingExisting = true; 
+    }
   }
 
   function fillFormWithData(m) {
