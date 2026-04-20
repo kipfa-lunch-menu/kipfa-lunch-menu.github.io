@@ -9,7 +9,6 @@
   <link rel="apple-touch-icon" href="favicon.png">
   <title>KIPFA 점심 추천</title>
   <style>
-    /* 기존 스타일 유지 */
     body { font-family: 'Pretendard', -apple-system, sans-serif; background-color: #f7f9fa; margin: 0; padding: 0; color: #2c3e50; }
     .container { max-width: 500px; margin: 0 auto; padding: 20px; padding-bottom: 90px; }
     .hidden { display: none !important; }
@@ -198,10 +197,14 @@
     fetchMenus(false);
   }
 
-  async function fetchMenus(silent) {
+ async function fetchMenus(silent) {
     if (!silent) showLoader('로딩 중...');
     try { const r = await fetch(SCRIPT_URL); allMenus = await r.json(); renderPicksTab(); renderAllTab(); }
-    catch (e) { alert('데이터 로드 실패'); } finally { hideLoader(); }
+    catch (e) { 
+      // ⭐️ 진짜 에러 메시지를 띄우도록 수정
+      alert('데이터 로드 실패 원인: ' + e.message); 
+    } 
+    finally { hideLoader(); }
   }
 
   function showTab(n) {
