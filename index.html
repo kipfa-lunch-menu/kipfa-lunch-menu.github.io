@@ -62,7 +62,7 @@
   <div id="login-screen">
     <h1 style="margin-bottom: 10px; font-size: 26px;">🏢 KIPFA 점심 추천</h1>
     <p style="color:#7f8c8d; margin-bottom:30px;">휴대폰 뒷자리 4자리를 입력하세요</p>
-    <input type="number" id="pin-input" class="pin-input" placeholder="0000" oninput="if(this.value.length > 4) this.value = this.value.slice(0,4);">
+    <input type="number" id="pin-input" class="pin-input" placeholder="0000" oninput="if(this.value.length > 4) this.value = this.value.slice(0,4);" onkeypress="if(event.key === 'Enter') login();">
     <button class="btn" onclick="login()">입장하기</button>
   </div>
 
@@ -147,7 +147,9 @@
 </div>
 
 <script>
+  // 구글 앱스 스크립트 주소
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRoJPOYW8FB1Ck69hOl56aluBxNDjUAPewlsTEgIvK39y6hShhx4SU6K2enx0R29NLAQ/exec'; 
+  
   const userMap = { '4488':'유인호','7991':'송선애','4611':'신동철','1121':'이소영','5555':'문진곤','4946':'유광열','5015':'박영민','2253':'조은지','8830':'이수연' };
   let currentUserPin = localStorage.getItem('lunchUserPin');
   let allMenus = [];
@@ -197,13 +199,15 @@
     fetchMenus(false);
   }
 
- async function fetchMenus(silent) {
-    if (!silent) showLoader('로딩 중...');
-    try { const r = await fetch(SCRIPT_URL); allMenus = await r.json(); renderPicksTab(); renderAllTab(); }
-    catch (e) { 
-      // ⭐️ 진짜 에러 메시지를 띄우도록 수정
-      alert('데이터 로드 실패 원인: ' + e.message); 
-    } 
+  async function fetchMenus(silent) {
+    if (!silent) showLoader('맛집 리스트를 불러오는 중...');
+    try { 
+      const r = await fetch(SCRIPT_URL); 
+      allMenus = await r.json(); 
+      renderPicksTab(); 
+      renderAllTab(); 
+    }
+    catch (e) { alert('데이터 로드 실패 원인: ' + e.message); } 
     finally { hideLoader(); }
   }
 
@@ -219,7 +223,6 @@
     if (nameInput.length < 2) return;
     const search = nameInput.replace(/\s/g, '');
     
-    // ⭐️ 스마트 중복 체크
     const existing = allMenus.find(m => {
       const target = (m['가게명'] || '').replace(/\s/g, '');
       return target.includes(search) || search.includes(target);
@@ -228,7 +231,6 @@
     if (existing) {
       if (confirm(`앗! 이미 등록된 맛집인 것 같아요.\n[등록된 이름: ${existing['가게명']}]\n\n이 맛집 정보를 불러올까요?`)) {
         fillFormWithData(existing);
-        // 중요: 추천일은 현재 모달의 설정을 따르도록 ID는 비워둡니다 (신규 추천 모드)
         document.getElementById('form-edit-id').value = ""; 
         document.getElementById('submit-btn').innerText = "추천 완료";
       }
@@ -255,7 +257,6 @@
 
     if (!shopName || !document.getElementById('form-menu-1').value) { alert('필수 항목을 입력하세요.'); return; }
 
-    // ⭐️ 최후의 중복 방어막 (같은 가게 + 같은 날짜 체크)
     const search = shopName.replace(/\s/g, '');
     const duplicatePick = allMenus.find(m => {
       const target = (m['가게명'] || '').replace(/\s/g, '');
@@ -269,7 +270,9 @@
     }
 
     showLoader('처리 중...');
+    
     const urlMatch = document.getElementById('form-url').value.match(/(https?:\/\/[^\s]+)/);
+    
     const postData = {
       action: isEdit ? 'edit_menu' : 'add_menu',
       id: editId, author: currentUserPin, visitDate: visitDate,
@@ -334,7 +337,9 @@
 
   function createCard(m, isPick) {
     const div = document.createElement('div'); div.className = 'menu-card';
-    const likes = (m['좋아요누른사람'] || '').split(',').filter(x=>x);
+    
+    const likes = String(m['좋아요누른사람'] || '').split(',').filter(x=>x);
+    
     const dateStr = m['추천방문일'] ? m['추천방문일'].split('T')[0] : '미정';
     div.innerHTML = `
       ${!isPick ? `<div class="card-top-actions"><button class="btn-mini" onclick="openModal('edit', '${m['ID']}')">✏️ 수정</button></div>` : ''}
