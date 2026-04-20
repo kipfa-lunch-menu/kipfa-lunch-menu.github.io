@@ -180,12 +180,12 @@
 
     <div class="form-group">
       <label>가게명 <span style="font-size:11px; color:#95a5a6; font-weight:normal;">(입력 시 기존 맛집 확인)</span></label>
-      <input type="text" id="form-shopname" placeholder="예: 홍수계찜닭 잠실점" onblur="checkDuplicate('name')" oninput="handleSmartPaste(this)">
+      <input type="text" id="form-shopname" placeholder="예: 홍수계찜닭 잠실점" onblur="checkDuplicate('name')">
     </div>
 
     <div class="form-group">
-      <label>지도 URL <span style="font-size:11px; color:#95a5a6; font-weight:normal;">(복사해서 아무 칸에나 붙여넣기)</span></label>
-      <input type="url" id="form-url" placeholder="https://..." onblur="checkDuplicate('url')" oninput="handleSmartPaste(this)">
+      <label>지도 URL <span style="font-size:11px; color:#95a5a6; font-weight:normal;">(네이버/카카오 지도 복사해서 붙여넣기)</span></label>
+      <input type="text" id="form-url" placeholder="https://..." onblur="checkDuplicate('url')">
     </div>
 
     <div class="form-group">
@@ -519,49 +519,25 @@
     }
   }
 
-  function handleSmartPaste(inputElement) {
-    const text = inputElement.value;
-    
-    if (text.includes('http') && text.includes('\n')) {
-      const urlMatch = text.match(/(https?:\/\/[^\s]+)/);
-      let extractedUrl = '';
-      if (urlMatch) {
-        extractedUrl = urlMatch[1];
-        document.getElementById('form-url').value = extractedUrl; 
-      }
-
-      const lines = text.split('\n').map(line => line.trim()).filter(line => line !== '');
-      let extractedName = '';
-      
-      if (lines[0].includes('[네이버지도]') || lines[0].includes('[카카오맵]')) {
-        extractedName = lines[1]; 
-        if (extractedName) {
-          document.getElementById('form-shopname').value = extractedName; 
-        }
-      }
-
-      if (inputElement.id === 'form-url' && extractedUrl) {
-        inputElement.value = extractedUrl;
-      }
-      
-      if (inputElement.id === 'form-shopname' && extractedName) {
-        inputElement.value = extractedName;
-      }
-    }
-  }
-
   function checkDuplicate(type) {
     if (isEditingExisting) return; 
     let val, existing;
+    
     if (type === 'name') {
       val = document.getElementById('form-shopname').value.trim();
       if (val.length < 2) return;
       existing = allMenus.find(m => m['가게명'] && m['가게명'].replace(/\s/g, '') === val.replace(/\s/g, ''));
-    } else if (type === 'url') {
+    } 
+    else if (type === 'url') {
       val = document.getElementById('form-url').value.trim();
+      const urlMatch = val.match(/(https?:\/\/[^\s]+)/);
+      if (urlMatch) {
+        val = urlMatch[1]; 
+      }
       if (val.length < 10) return;
       existing = allMenus.find(m => m['가게URL'] === val);
     }
+
     if (existing) {
       if (confirm(`기존에 등록된 내용이 있습니다. [${existing['가게명']}]\n가게 정보를 불러와 다시 추천하시겠습니까?`)) {
         fillFormWithData(existing); isEditingExisting = true; 
@@ -575,19 +551,36 @@
     const dateVal = document.getElementById('form-date').value;
     const shopName = document.getElementById('form-shopname').value.trim();
     const m1 = document.getElementById('form-menu-1').value.trim();
+    
     if (!isEditMode && !dateVal) { alert('선택 가능한 날짜가 없습니다.'); return; }
     if (!shopName || !m1) { alert('가게명과 첫 번째 메뉴는 필수입니다!'); return; }
+
+    let rawUrl = document.getElementById('form-url').value.trim();
+    let cleanedUrl = rawUrl;
+    if (rawUrl) {
+      const urlMatch = rawUrl.match(/(https?:\/\/[^\s]+)/);
+      if (urlMatch) {
+        cleanedUrl = urlMatch[1]; // 진짜 URL만 추출
+      } else {
+        cleanedUrl = ''; // URL 형식이 없으면 깔끔하게 빈칸 처리
+      }
+    }
+
     const combinedMenus = [m1, document.getElementById('form-menu-2').value.trim(), document.getElementById('form-menu-3').value.trim()].filter(menu => menu !== '').join(', ');
     const combinedPrice = `${document.getElementById('form-price-min').value}원 ~ ${document.getElementById('form-price-max').value}원`;
     const btn = document.getElementById('submit-btn');
+    
     btn.disabled = true;
     showLoader(isEditMode ? '정보를 수정하는 중입니다... 🚀' : '추천 메뉴를 등록하는 중입니다... 🚀');
+    
     const postData = {
       action: isEditMode ? 'edit_menu' : 'add_menu',
       id: editId, author: currentUserPin, category: document.getElementById('form-category').value,
-      visitDate: dateVal, shopName: shopName, shopUrl: document.getElementById('form-url').value,
+      visitDate: dateVal, shopName: shopName, 
+      shopUrl: cleanedUrl, // 
       menus: combinedMenus, price: combinedPrice    
     };
+    
     try {
       const response = await fetch(SCRIPT_URL, { 
         method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(postData) 
