@@ -38,6 +38,20 @@
       font-weight: bold; 
     }
 
+    .filter-section { 
+      position: -webkit-sticky; 
+      position: sticky; 
+      top: 125px; 
+      background: rgba(247, 249, 250, 0.95); 
+      backdrop-filter: blur(5px);
+      z-index: 90; 
+      padding: 10px 0; 
+      margin-bottom: 15px; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 10px; 
+    }
+
     #login-screen { text-align: center; margin-top: 100px; }
     .pin-input { font-size: 24px; padding: 12px; width: 160px; text-align: center; border: 2px solid #ddd; border-radius: 12px; margin-bottom: 25px; letter-spacing: 5px; background: white; }
     input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
@@ -57,7 +71,6 @@
     .tab { flex: 1; text-align: center; padding: 14px; background: white; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 14px; border: 1px solid #eee; transition: 0.3s; color: #7f8c8d; }
     .tab.active { background: #3498db; color: white; border-color: #3498db; box-shadow: 0 4px 10px rgba(52,152,219,0.3); }
     
-    .filter-section { margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
     .search-input, .category-select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e1e5e8; box-sizing: border-box; font-size: 14px; background: white; outline: none; }
 
     .menu-card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); margin-bottom: 18px; border: 1px solid #e1e5e8; position: relative; }
@@ -181,6 +194,7 @@
   let activePickNames = []; 
 
   window.onload = () => { initPriceDropdowns(); initDateDropdown(); if (currentUserPin && userMap[currentUserPin]) showMainScreen(); showA2HS(); };
+  
   function showLoader(t) { document.getElementById('loader-text').innerText = t; document.getElementById('global-loader').classList.remove('hidden'); }
   function hideLoader() { document.getElementById('global-loader').classList.add('hidden'); }
   
@@ -249,7 +263,7 @@
         <button class="btn-mini" onclick="openModal('edit', '${m['ID']}')">✏️ 수정</button>
         <button class="btn-mini danger" onclick="openDeleteModal('${m['ID']}')" ${isDeleteRequested?'disabled':''}>${isDeleteRequested?'요청중':'🗑️ 삭제'}</button>
       </div>`;
-      bottomActionsHTML = `<button class="btn-outline" onclick="openModal('re-pick', '${m['ID']}')">🔄 다시 Pick 하기</button>`;
+      bottomActionsHTML = `<button class="btn-outline" onclick="openModal('re-pick', '${m['ID']}')" id="repick-${m['ID']}">🔄 다시 Pick 하기</button>`;
     }
 
     div.innerHTML = `${topActionsHTML}${deletedTagHTML}
@@ -350,6 +364,7 @@
 
     const btn = document.getElementById('submit-btn');
     btn.disabled = true; btn.innerText = "⏳ 처리 중...";
+    showLoader('처리 중...');
     
     const urlMatch = document.getElementById('form-url').value.match(/(https?:\/\/[^\s]+)/);
     const postData = {
@@ -358,7 +373,7 @@
       price: `${document.getElementById('form-price-min').value}원 ~ ${document.getElementById('form-price-max').value}원`
     };
     try { const r = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify(postData) }); if ((await r.json()).success) { alert(isEdit?'수정 완료!':'추천 완료!'); closeModal(); fetchMenus(true); } }
-    catch (e) { alert('통신 오류'); } finally { btn.disabled = false; btn.innerText = isEdit ? "수정 완료" : "추천 완료"; }
+    catch (e) { alert('통신 오류'); } finally { hideLoader(); btn.disabled = false; btn.innerText = isEdit ? "수정 완료" : "추천 완료"; }
   }
 
   function openModal(mode, id) {
@@ -378,7 +393,6 @@
   }
   
   function openDeleteModal(id) { document.getElementById('delete-menu-id').value = id; document.getElementById('delete-modal').classList.remove('hidden'); }
-  
   async function submitDeleteRequest() {
     const id = document.getElementById('delete-menu-id').value, reason = document.getElementById('delete-reason').value;
     const btn = document.getElementById('delete-submit-btn');
@@ -386,7 +400,6 @@
     document.getElementById('delete-modal').classList.add('hidden'); showLoader('삭제 요청 처리 중...');
     try { const r = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify({ action:'request_delete', id:id, reason:reason }) }); if ((await r.json()).success) { alert('삭제 요청 접수!'); fetchMenus(true); } } catch(e) { alert('오류'); } finally { hideLoader(); btn.disabled = false; btn.innerText = "요청하기"; }
   }
-  
   function showA2HS() {
     if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true || localStorage.getItem('hideA2HS') === 'true') return;
     if (/iphone|ipad|ipod|android/.test(window.navigator.userAgent.toLowerCase())) setTimeout(() => document.getElementById('a2hs-banner').classList.add('show'), 2000);
