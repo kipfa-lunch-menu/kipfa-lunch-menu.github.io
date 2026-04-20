@@ -526,7 +526,19 @@
     if (type === 'name') {
       val = document.getElementById('form-shopname').value.trim();
       if (val.length < 2) return;
-      existing = allMenus.find(m => m['가게명'] && m['가게명'].replace(/\s/g, '') === val.replace(/\s/g, ''));
+      
+      // 띄어쓰기를 무시하기 위해 공백을 모두 제거한 검색어 생성
+      const searchName = val.replace(/\s/g, '');
+      
+      // 양방향 포함 검사 로직
+      existing = allMenus.find(m => {
+        if (!m['가게명']) return false;
+        const targetName = m['가게명'].replace(/\s/g, '');
+        
+        // 입력값(홍수계찜닭)이 기존이름(홍수계찜닭잠실점)에 포함되거나,
+        // 기존이름(홍수계)이 입력값(홍수계찜닭)에 포함되면 중복으로 간주!
+        return targetName.includes(searchName) || searchName.includes(targetName);
+      });
     } 
     else if (type === 'url') {
       val = document.getElementById('form-url').value.trim();
@@ -539,7 +551,8 @@
     }
 
     if (existing) {
-      if (confirm(`기존에 등록된 내용이 있습니다. [${existing['가게명']}]\n가게 정보를 불러와 다시 추천하시겠습니까?`)) {
+      // 안내 메시지도 상황에 맞게 조금 더 부드럽게 수정했습니다.
+      if (confirm(`기존에 비슷하거나 같은 맛집이 등록되어 있습니다.\n[등록된 이름: ${existing['가게명']}]\n\n이 맛집 정보를 불러와서 다시 추천(Pick) 하시겠습니까?`)) {
         fillFormWithData(existing); isEditingExisting = true; 
       }
     }
