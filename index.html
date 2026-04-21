@@ -9,10 +9,13 @@
   <link rel="apple-touch-icon" href="favicon.png">
   <title>KIPFA 점심 추천</title>
   <style>
+    :root {
+      --sticky-top: 135px;
+    }
     body { font-family: 'Pretendard', -apple-system, sans-serif; background-color: #f7f9fa; margin: 0; padding: 0; color: #2c3e50; }
     .container { max-width: 500px; margin: 0 auto; padding: 0 20px 90px 20px; } 
     .hidden { display: none !important; }
-    
+
     .sticky-top-area { 
       position: -webkit-sticky; 
       position: sticky; 
@@ -22,11 +25,12 @@
       padding-top: 20px; 
       padding-bottom: 5px; 
     }
-    
+
     .section-title { 
       position: -webkit-sticky; 
       position: sticky; 
       top: 135px; 
+      top: var(--sticky-top); 
       background: rgba(247, 249, 250, 0.95); 
       backdrop-filter: blur(5px);
       z-index: 90; 
@@ -42,6 +46,7 @@
       position: -webkit-sticky; 
       position: sticky; 
       top: 125px; 
+      top: var(--sticky-top); 
       background: rgba(247, 249, 250, 0.95); 
       backdrop-filter: blur(5px);
       z-index: 90; 
@@ -70,15 +75,14 @@
     .tabs { display: flex; gap: 10px; margin-bottom: 10px; }
     .tab { flex: 1; text-align: center; padding: 14px; background: white; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 14px; border: 1px solid #eee; transition: 0.3s; color: #7f8c8d; }
     .tab.active { background: #3498db; color: white; border-color: #3498db; box-shadow: 0 4px 10px rgba(52,152,219,0.3); }
-    
+
     .search-input, .category-select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #e1e5e8; box-sizing: border-box; font-size: 14px; background: white; outline: none; }
 
     .menu-card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); margin-bottom: 18px; border: 1px solid #e1e5e8; position: relative; }
-    .card-top-actions { position: absolute; top: 18px; right: 18px; display: flex; gap: 6px; z-index: 10; }
+    .card-top-actions { position: absolute; top: 18px; right: 18px; display: flex; gap: 6px; }
     .btn-mini { background: #f1f3f5; border: none; padding: 5px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; color: #7f8c8d; transition: 0.2s; }
-    .btn-mini.danger:hover { background: #fee2e2; color: #e74c3c; }
     
-    /* ⭐️ 버튼과 겹치지 않도록 안전 여백(padding-right: 105px) 추가 */
+    /* ⭐️ 버튼과 겹치지 않도록 안전 여백 추가 */
     .menu-card h3 { margin: 0 0 6px 0; font-size: 18px; color: #2c3e50; padding-right: 105px; }
     .tag-container { margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 5px; padding-right: 105px; }
     
@@ -86,10 +90,10 @@
     .tag-date { background: #fff9db; color: #f08c00; }
     .tag-status { background: #e3f2fd; color: #1976d2; border: 1px solid #bbdefb; } 
     .tag-deleted { background: #fee2e2; color: #e74c3c; width: 100%; text-align: center; margin-bottom: 12px; font-size: 12px; padding: 8px; border-radius: 8px; font-weight: bold; box-sizing: border-box; }
-    
+
     .menu-details { font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 15px; background: #f8f9fa; padding: 12px; border-radius: 10px; }
     .map-link { color: #e67e22; text-decoration: none; font-weight: bold; font-size: 13px; background: #fdf3e9; padding: 6px 12px; border-radius: 20px; }
-    
+
     .reaction-group { display: flex; gap: 8px; }
     .like-btn, .dislike-btn { background: white; border: 1px solid #eee; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 4px; font-size: 13px; transition: 0.2s; }
     .like-btn.liked { background: #fa5252; color: white; border-color: #fa5252; }
@@ -127,7 +131,7 @@
   </div>
 
   <div id="main-screen" class="hidden">
-    
+
     <div class="sticky-top-area">
       <div class="header">
         <h2>KIPFA 점심 추천</h2>
@@ -142,7 +146,7 @@
     <div id="view-recommended">
       <h3 class="section-title">🎯 이번주 수/금 회식 후보</h3>
       <div id="list-this-week"></div>
-      
+
       <h3 class="section-title">🗓️ 다음주 수/금 회식 후보</h3>
       <div id="list-next-week"></div>
     </div>
@@ -198,17 +202,30 @@
   let currentUserPin = localStorage.getItem('lunchUserPin'), allMenus = [], isEditingExisting = false;
   let activePickNames = []; 
 
-  window.onload = () => { initPriceDropdowns(); initDateDropdown(); if (currentUserPin && userMap[currentUserPin]) showMainScreen(); showA2HS(); };
-  
+  window.onload = () => { 
+    initPriceDropdowns(); 
+    initDateDropdown(); 
+    if (currentUserPin && userMap[currentUserPin]) showMainScreen(); 
+    showA2HS(); 
+    window.addEventListener('resize', updateStickyGap);
+  };
+
+  function updateStickyGap() {
+    const header = document.querySelector('.sticky-top-area');
+    if (header) {
+      document.documentElement.style.setProperty('--sticky-top', Math.floor(header.getBoundingClientRect().height) - 1 + 'px');
+    }
+  }
+
   function showLoader(t) { document.getElementById('loader-text').innerText = t; document.getElementById('global-loader').classList.remove('hidden'); }
   function hideLoader() { document.getElementById('global-loader').classList.add('hidden'); }
-  
+
   function initPriceDropdowns() {
     const min = document.getElementById('form-price-min'), max = document.getElementById('form-price-max');
     for (let i=500; i<=50000; i+=500) { let p = i.toLocaleString(); min.add(new Option(p, p)); max.add(new Option(p, p)); }
     min.value = "9,000"; max.value = "15,000";
   }
-  
+
   function initDateDropdown() {
     const s = document.getElementById('form-date'); s.innerHTML = '';
     let today = new Date(); today.setHours(0,0,0,0);
@@ -226,8 +243,14 @@
 
   function login() { const p = document.getElementById('pin-input').value; if (userMap[p]) { localStorage.setItem('lunchUserPin', p); currentUserPin = p; showMainScreen(); } else alert('등록되지 않은 번호입니다.'); }
   function logout() { localStorage.removeItem('lunchUserPin'); location.reload(); }
-  function showMainScreen() { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('main-screen').classList.remove('hidden'); document.getElementById('user-info').innerText = `👋 ${userMap[currentUserPin]}님`; fetchMenus(false); }
-  
+  function showMainScreen() { 
+    document.getElementById('login-screen').classList.add('hidden'); 
+    document.getElementById('main-screen').classList.remove('hidden'); 
+    document.getElementById('user-info').innerText = `👋 ${userMap[currentUserPin]}님`; 
+    fetchMenus(false); 
+    setTimeout(updateStickyGap, 100);
+  }
+
   async function fetchMenus(silent) {
     if (!silent) showLoader('데이터 로딩 중...');
     try { const r = await fetch(SCRIPT_URL); allMenus = await r.json(); renderPicksTab(); renderAllTab(); }
@@ -240,6 +263,7 @@
     document.getElementById('tab-recommended').classList.toggle('active', n === 'recommended');
     document.getElementById('tab-all').classList.toggle('active', n === 'all');
     window.scrollTo(0, 0); 
+    setTimeout(updateStickyGap, 50);
   }
 
   function createCard(m, tabType) {
@@ -251,7 +275,7 @@
     const cleanName = (m['가게명'] || '').replace(/\s/g, '');
 
     let reactionHTML = '', topActionsHTML = '', bottomActionsHTML = '', deletedTagHTML = '', activePickTag = '';
-    
+
     if (isDeleteRequested) deletedTagHTML = `<div class="tag-deleted">🚨 삭제 요청 검토 중: ${m['삭제요청사유'] || '사유 미상'}</div>`;
 
     if (tabType === 'pick') {
@@ -296,11 +320,11 @@
       if (!m['추천방문일']) return;
       const dStr = String(m['추천방문일']).split('T')[0];
       const d = new Date(dStr + "T00:00:00"); 
-      
+
       if (d >= thisStart && d < nextNext) {
         activePickNames.push((m['가게명'] || '').replace(/\s/g, '')); 
       }
-      
+
       if (d >= thisStart && d < nextStart) tw.appendChild(createCard(m, 'pick'));
       else if (d >= nextStart && d < nextNext) nw.appendChild(createCard(m, 'pick'));
     });
@@ -309,13 +333,13 @@
   function renderAllTab() {
     const l = document.getElementById('list-all'); l.innerHTML = '';
     const s = document.getElementById('search-input').value.toLowerCase(), f = document.getElementById('category-filter').value;
-    
+
     const uniqueMap = new Map();
     allMenus.forEach(m => {
       const cleanName = (m['가게명'] || '').replace(/\s/g, '');
       uniqueMap.set(cleanName, m);
     });
-    
+
     const displayList = Array.from(uniqueMap.values()).reverse();
 
     displayList.forEach(m => {
@@ -329,7 +353,7 @@
     if (isEditingExisting) return; 
     let inputVal = document.getElementById(type === 'name' ? 'form-shopname' : 'form-url').value.trim();
     if (inputVal.length < 2) return;
-    
+
     let search = inputVal.replace(/\s/g, '');
     let found = allMenus.find(m => {
       const target = (type === 'name' ? m['가게명'] : m['가게URL'] || '').replace(/\s/g, '');
@@ -370,7 +394,7 @@
     const btn = document.getElementById('submit-btn');
     btn.disabled = true; btn.innerText = "⏳ 처리 중...";
     showLoader('처리 중...');
-    
+
     const urlMatch = document.getElementById('form-url').value.match(/(https?:\/\/[^\s]+)/);
     const postData = {
       action: isEdit ? 'edit_menu' : 'add_menu', id: editId, author: currentUserPin, visitDate: visitDate, category: document.getElementById('form-category').value,
@@ -390,13 +414,13 @@
   }
   function resetForm() { ['form-shopname','form-url','form-menu-1','form-menu-2','form-menu-3'].forEach(id => document.getElementById(id).value = ''); document.getElementById('form-category').value = '한식'; }
   function closeModal() { document.getElementById('add-modal').classList.add('hidden'); }
-  
+
   async function toggleReaction(id, action, btn) { 
     const originalText = btn.innerHTML;
     btn.disabled = true; btn.innerHTML = '⏳...';
     try { const r = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify({ action:action, id:id, userPin:currentUserPin }) }); if ((await r.json()).success) fetchMenus(true); } catch(e) { alert('오류'); btn.disabled = false; btn.innerHTML = originalText; } 
   }
-  
+
   function openDeleteModal(id) { document.getElementById('delete-menu-id').value = id; document.getElementById('delete-modal').classList.remove('hidden'); }
   async function submitDeleteRequest() {
     const id = document.getElementById('delete-menu-id').value, reason = document.getElementById('delete-reason').value;
